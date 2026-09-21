@@ -25,7 +25,7 @@ Gatilho do usuário: **"continue conforme o proximosPassos.md"**. Sem mais nada 
 - Commit direto na `main`. Nunca criar branch. Nunca commitar segredo.
 - Ao encerrar, atualize este documento: estado, o que ficou pendente, e os fatos novos do ambiente.
 
-**Onde estão as coisas**: repositório `D:/git/projMan` (`origin` = `github.com/edalcin/projMan`, público, issues ativas, `gh` autenticado como `edalcin`). Tracker do wayfinder = issues deste repositório. Nenhum job em voo, working tree limpo no commit `caf88f4`.
+**Onde estão as coisas**: repositório `D:/git/projMan` (`origin` = `github.com/edalcin/projMan`, público, issues ativas, `gh` autenticado como `edalcin`). Tracker do wayfinder = issues deste repositório. Nenhum job em voo; a sessão de 2026-09-21 fechou com a `main` sincronizada com o `origin` (o último commit é a atualização deste documento).
 
 ## Onde o projeto está
 
