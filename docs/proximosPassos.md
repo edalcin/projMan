@@ -3,6 +3,30 @@
 > Documento de estado. Toda sessão nova começa por aqui.
 > Última atualização: 2026-09-21.
 
+## Como retomar (instruções para a sessão nova)
+
+Gatilho do usuário: **"continue conforme o proximosPassos.md"**. Sem mais nada dito, faça exatamente isto, nesta ordem.
+
+**Passo 0 — orientação (não pergunte nada antes de fazer).**
+- Leia este documento inteiro.
+- Leia o mapa: `gh issue view 1 --repo edalcin/projMan`.
+- Confira a fronteira: `gh issue list --repo edalcin/projMan --state open` e, para cada issue aberta, `gh api repos/edalcin/projMan/issues/<n> --jq '.issue_dependencies_summary.blocked_by'` — zero significa takeable.
+- Não releia o Vikunja; as decisões dele já estão destiladas abaixo.
+
+**Passo 1 — a entrega pendente vem primeiro.** Execute a seção [Como retomar essa entrega](#como-retomar-essa-entrega): app mínimo, `Dockerfile`, workflow, `.env.example`, template do UNRAID, seção no README. É trabalho mecânico, sem decisão pendente, e produz a imagem que permite testar tudo o que vier depois. Termine com a verificação do passo 8 dessa seção; só então declare feito.
+
+**Passo 2 — voltar ao planejamento.** Com a entrega no ar, siga o mapa: assuma o ticket [#7](https://github.com/edalcin/projMan/issues/7) (primeiro da fronteira), reivindique-o com `gh issue edit 7 --add-assignee @me` **antes** de qualquer trabalho, e conduza-o com as skills `grilling` e `domain-modeling` — é um ticket HITL, então as perguntas vão ao usuário, **uma por vez** (preferência dele), com recomendação em cada uma. Ao resolver: comentário com a resposta, `gh issue close`, e uma linha nova em *Decisions so far* no corpo da issue #1.
+
+**Regras desta jornada** (valem em toda sessão):
+- Um ticket por sessão, exceto `research`, que pode ir em paralelo por subagente.
+- Perguntas ao usuário: **uma por vez**, sempre com recomendação.
+- Modo `ponytail` (full): a escada YAGNI vale para cada decisão; a opção que remove código ganha.
+- Responda em português, com jargão técnico em inglês, frases curtas.
+- Commit direto na `main`. Nunca criar branch. Nunca commitar segredo.
+- Ao encerrar, atualize este documento: estado, o que ficou pendente, e os fatos novos do ambiente.
+
+**Onde estão as coisas**: repositório `D:/git/projMan` (`origin` = `github.com/edalcin/projMan`, público, issues ativas, `gh` autenticado como `edalcin`). Tracker do wayfinder = issues deste repositório. Nenhum job em voo, working tree limpo no commit `caf88f4`.
+
 ## Onde o projeto está
 
 **Fase: planejamento (wayfinding).** Não existe código de aplicação ainda. O repositório tem `README.md`, `LICENSE` e este documento.
@@ -77,7 +101,7 @@ O usuário pediu, no fim da sessão de 2026-09-21, duas entregas de execução q
 1. **Template do UNRAID** em `/boot/config/plugins/dockerMan/templates-user/my-projMan.xml`, para subir o container pela interface (Docker → Add).
 2. **GitHub Action** que publique uma imagem nova a cada alteração de código.
 
-**Nada disso foi criado.** Não existe `Dockerfile`, `.github/workflows/`, `package.json`, `.env.example` nem template. Um scaffold do SvelteKit foi iniciado em `D:/git/_projman_scaffold` e **cancelado no meio** — apague essa pasta antes de recomeçar; ela está fora do repositório e pode estar pela metade.
+**Nada disso foi criado.** Não existe `Dockerfile`, `.github/workflows/`, `package.json`, `.env.example` nem template — o repositório tem só `README.md`, `LICENSE` e este documento. O scaffold do SvelteKit que havia sido iniciado em `D:/git/_projman_scaffold` foi cancelado e **a pasta já foi apagada**; o scaffold recomeça do zero.
 
 ### Como retomar essa entrega
 
