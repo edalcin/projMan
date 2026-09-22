@@ -16,8 +16,9 @@ ENV NODE_ENV=production \
 COPY --from=build /app/build ./build
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/package.json ./package.json
-# UNRAID: nobody:users
-RUN mkdir -p /data /files && chown 99:100 /data /files
+# UNRAID: nobody:users. npm global sai: runtime nao usa, e e a fonte dos CVEs da base.
+RUN mkdir -p /data /files && chown 99:100 /data /files \
+ && rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 USER 99:100
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
