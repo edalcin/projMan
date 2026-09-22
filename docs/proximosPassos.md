@@ -1,7 +1,7 @@
 # projMan — próximos passos
 
 > Documento de estado. Toda sessão nova começa por aqui.
-> Última atualização: 2026-09-21.
+> Última atualização: 2026-09-22.
 
 ## Como retomar (instruções para a sessão nova)
 
@@ -13,7 +13,7 @@ Gatilho do usuário: **"continue conforme o proximosPassos.md"**. Sem mais nada 
 - Confira a fronteira: `gh issue list --repo edalcin/projMan --state open` e, para cada issue aberta, `gh api repos/edalcin/projMan/issues/<n> --jq '.issue_dependencies_summary.blocked_by'` — zero significa takeable.
 - Não releia o Vikunja; as decisões dele já estão destiladas abaixo.
 
-**Passo 1 — a entrega pendente vem primeiro.** Execute a seção [Como retomar essa entrega](#como-retomar-essa-entrega): app mínimo, `Dockerfile`, workflow, `.env.example`, template do UNRAID, seção no README. É trabalho mecânico, sem decisão pendente, e produz a imagem que permite testar tudo o que vier depois. Termine com a verificação do passo 8 dessa seção; só então declare feito.
+**Passo 1 — a entrega de empacotamento já está feita** (ver seção "Entrega de empacotamento — CONCLUÍDA"). Nada a repetir ali. Teste de container é sempre no Docker local; nunca no UNRAID.
 
 **Passo 2 — voltar ao planejamento.** Com a entrega no ar, siga o mapa: assuma o ticket [#7](https://github.com/edalcin/projMan/issues/7) (primeiro da fronteira), reivindique-o com `gh issue edit 7 --add-assignee @me` **antes** de qualquer trabalho, e conduza-o com as skills `grilling` e `domain-modeling` — é um ticket HITL, então as perguntas vão ao usuário, **uma por vez** (preferência dele), com recomendação em cada uma. Ao resolver: comentário com a resposta, `gh issue close`, e uma linha nova em *Decisions so far* no corpo da issue #1.
 
@@ -94,29 +94,18 @@ Bloqueados: [#9 schema](https://github.com/edalcin/projMan/issues/9) (espera #7,
 
 **Caminho crítico**: #7 + #8 → #9 (schema) → #11 → #15. O schema é o gargalo, e os dois tickets que o destravam são independentes entre si.
 
-## Trabalho pedido e NÃO concluído
+## Entrega de empacotamento — CONCLUÍDA (2026-09-22)
 
-O usuário pediu, no fim da sessão de 2026-09-21, duas entregas de execução que ficaram **incompletas** (a sessão foi encerrada por limite de créditos):
+- App mínimo SvelteKit (`sv` template `minimal`, TS) com `@sveltejs/adapter-node`; adapter configurado no `vite.config.ts` (o `sv` novo não gera `svelte.config.js`).
+- Rota `GET /api/saude`: confere que o diretório de `DB_PATH` e `FILES_PATH` estão graváveis. Abrir o banco entra aqui quando o schema (#9) existir.
+- `Dockerfile` multi-stage `node:22-alpine`, `USER 99:100`, `HEALTHCHECK` em Node puro. **O `npm` global é removido da imagem final** — era a fonte dos 11 CVEs HIGH/CRITICAL que reprovavam o Trivy.
+- `.github/workflows/docker.yml`: build local → Trivy (`aquasecurity/trivy-action@v0.36.0`, com `v`) → push `latest` + SHA curto para `ghcr.io/edalcin/projman`. **Verde**, pacote público (pull anônimo confirmado).
+- `.env.example`, `.dockerignore`, template em `deploy/unraid/my-projMan.xml` (também copiado para o servidor), seção de instalação no `README.md`.
+- Verificação: `docker build` + `docker run` **na máquina local**, `/api/saude` → 200, health `healthy`.
 
-1. **Template do UNRAID** em `/boot/config/plugins/dockerMan/templates-user/my-projMan.xml`, para subir o container pela interface (Docker → Add).
-2. **GitHub Action** que publique uma imagem nova a cada alteração de código.
+**Regra nova do usuário**: nunca subir container no UNRAID para teste. O UNRAID é só produção e recebe apenas o template XML; todo teste de container é no Docker local (Windows). Já gravada no `AGENTS.md` global.
 
-**Nada disso foi criado.** Não existe `Dockerfile`, `.github/workflows/`, `package.json`, `.env.example` nem template — o repositório tem só `README.md`, `LICENSE` e este documento. O scaffold do SvelteKit que havia sido iniciado em `D:/git/_projman_scaffold` foi cancelado e **a pasta já foi apagada**; o scaffold recomeça do zero.
-
-### Como retomar essa entrega
-
-Pré-requisito que a próxima sessão precisa decidir primeiro: o CI só fica verde se a imagem construir, e construir exige um app mínimo. Ordem sugerida:
-
-1. `npx sv create` (template `minimal`, TypeScript, sem add-ons) num diretório temporário; copiar para o repositório; trocar `adapter-auto` por `@sveltejs/adapter-node`.
-2. Rota de saúde (`/api/saude`) que confirme banco acessível e `FILES_PATH` gravável — é o que o `HEALTHCHECK` chama.
-3. `Dockerfile` multi-stage por #6: `node:22-alpine`, `npm ci --omit=dev` no estágio final, `USER 99:100`, `HEALTHCHECK` em Node puro.
-4. `.github/workflows/docker.yml`: push na `main` → `docker/metadata-action` com `latest` + SHA curto → build com cache `type=gha` → Trivy → push para `ghcr.io/edalcin/projman`. Permissão `packages: write` no `GITHUB_TOKEN`.
-5. `.env.example` com `DB_PATH`, `FILES_PATH`, `ADMIN_PASSWORD_HASH`, `ORIGIN`, `PORT`, `TZ`, `BODY_SIZE_LIMIT`; `.env` no `.gitignore`.
-6. Template XML do UNRAID e cópia para o servidor.
-7. Seção de instalação no UNRAID no `README.md`.
-8. Verificar: build local da imagem + `curl` na rota de saúde; depois push na `main` e acompanhar o workflow até publicar no GHCR.
-
-Formalmente isto é o ticket [#13](https://github.com/edalcin/projMan/issues/13), que está bloqueado pelo schema (#9). O empacotamento em si não depende do schema — só as migrações dependem. Se retomar por aqui, o Dockerfile e o CI podem sair antes, e o ticket #13 fica para a decisão de migração, backup e atualização.
+Falta do ticket [#13](https://github.com/edalcin/projMan/issues/13): migrações, backup e política de atualização — dependem do schema (#9).
 
 ## Fatos do ambiente (verificados em 2026-09-21)
 
