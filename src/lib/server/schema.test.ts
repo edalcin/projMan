@@ -120,3 +120,13 @@ test('link público exige hash de 40 caracteres', () => {
 		/CHECK/
 	);
 });
+
+test('instante fora do formato canônico é recusado', () => {
+	const db = banco();
+	const p = novoProjeto(db);
+	const inserir = (due: string) =>
+		db.prepare("INSERT INTO tasks (project_id, title, due_date) VALUES (?, 'T', ?)").run(p, due);
+	assert.doesNotThrow(() => inserir(new Date().toISOString()));
+	for (const ruim of ['2026-09-22T12:00:00Z', '2026-09-22', '2026-09-22 12:00:00.000', '2026-09-22T12:00:00.000-03:00'])
+		assert.throws(() => inserir(ruim), /CHECK/, ruim);
+});

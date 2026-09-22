@@ -20,11 +20,14 @@ CREATE TABLE tasks (
   description      TEXT    NOT NULL DEFAULT '',  -- HTML do TipTap, já sanitizado (#4)
   description_text TEXT    NOT NULL DEFAULT '',  -- derivado, alimenta o FTS5
   done             INTEGER NOT NULL DEFAULT 0 CHECK (done IN (0, 1)),
-  done_at          TEXT,
-  due_date         TEXT,
+  -- Instantes: formato canônico de Date.toISOString(), sempre com milissegundos.
+  -- As smart lists comparam como texto; '…59Z' e '…59.999Z' não se ordenam
+  -- como instantes ('Z' > '.'), então um formato só é requisito, não estilo.
+  done_at          TEXT    CHECK (done_at    GLOB '[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-5][0-9].[0-9][0-9][0-9]Z'),
+  due_date         TEXT    CHECK (due_date   GLOB '[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-5][0-9].[0-9][0-9][0-9]Z'),
   due_all_day      INTEGER NOT NULL DEFAULT 1 CHECK (due_all_day IN (0, 1)),
-  start_date       TEXT,
-  end_date         TEXT,
+  start_date       TEXT    CHECK (start_date GLOB '[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-5][0-9].[0-9][0-9][0-9]Z'),
+  end_date         TEXT    CHECK (end_date   GLOB '[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-5][0-9].[0-9][0-9][0-9]Z'),
   priority         INTEGER NOT NULL DEFAULT 0 CHECK (priority BETWEEN 0 AND 5), -- 0 = sem prioridade
   repeat_every     INTEGER CHECK (repeat_every > 0),
   repeat_unit      TEXT    CHECK (repeat_unit IN ('day', 'week', 'month', 'year')),
