@@ -3,7 +3,9 @@
 FROM node:22-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+# better-sqlite3 v13 traz os binarios (inclusive linuxmusl) no pacote; sem
+# --ignore-scripts o npm tentaria o node-gyp implicito e exigiria toolchain.
+RUN npm ci --ignore-scripts
 COPY . .
 RUN npm run build && npm prune --omit=dev
 
