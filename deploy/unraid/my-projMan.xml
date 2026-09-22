@@ -22,7 +22,8 @@
   <Config Name="Anexos" Target="/files" Default="/mnt/user/Storage/appsdata/projman/files" Mode="rw" Description="Diretorio dos anexos" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/Storage/appsdata/projman/files</Config>
   <Config Name="DB_PATH" Target="DB_PATH" Default="/data/projman.db" Mode="" Description="Arquivo SQLite dentro do container" Type="Variable" Display="advanced" Required="true" Mask="false">/data/projman.db</Config>
   <Config Name="FILES_PATH" Target="FILES_PATH" Default="/files" Mode="" Description="Diretorio dos anexos dentro do container" Type="Variable" Display="advanced" Required="true" Mask="false">/files</Config>
-  <Config Name="ADMIN_PASSWORD_HASH" Target="ADMIN_PASSWORD_HASH" Default="" Mode="" Description="Hash scrypt da senha de admin" Type="Variable" Display="always" Required="true" Mask="true"/>
+  <Config Name="ADMIN_PASSWORD_HASH" Target="ADMIN_PASSWORD_HASH" Default="" Mode="" Description="Hash scrypt da senha de admin. Gere com: node scripts/hash-senha.ts" Type="Variable" Display="always" Required="true" Mask="true"/>
+  <Config Name="SESSION_SECRET" Target="SESSION_SECRET" Default="" Mode="" Description="Assina o cookie de sessao. Minimo 32 caracteres. Gere com: openssl rand -base64 48" Type="Variable" Display="always" Required="true" Mask="true"/>
   <Config Name="ORIGIN" Target="ORIGIN" Default="" Mode="" Description="URL publica exata. Sem ela todo POST volta 403." Type="Variable" Display="always" Required="true" Mask="false"/>
   <Config Name="ADDRESS_HEADER" Target="ADDRESS_HEADER" Default="CF-Connecting-IP" Mode="" Description="Header do IP real atras do Cloudflare Tunnel" Type="Variable" Display="advanced" Required="false" Mask="false">CF-Connecting-IP</Config>
   <Config Name="TZ" Target="TZ" Default="America/Sao_Paulo" Mode="" Description="Fuso horario" Type="Variable" Display="advanced" Required="false" Mask="false">America/Sao_Paulo</Config>

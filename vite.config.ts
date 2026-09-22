@@ -11,7 +11,25 @@ export default defineConfig({
 					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
 			},
 
-			adapter: adapter()
+			adapter: adapter(),
+
+			// CSP (#10). 'auto' põe nonce nas páginas dinâmicas e hash nas pré-renderizadas.
+			// style 'unsafe-inline': atributos style= do Svelte; o HTML do TipTap chega
+			// sanitizado (#4) e sem style. img data:/blob: para prévia de anexo.
+			csp: {
+				mode: 'auto',
+				directives: {
+					'default-src': ['self'],
+					'script-src': ['self'],
+					'style-src': ['self', 'unsafe-inline'],
+					'img-src': ['self', 'data:', 'blob:'],
+					'connect-src': ['self'],
+					'object-src': ['none'],
+					'base-uri': ['self'],
+					'form-action': ['self'],
+					'frame-ancestors': ['none']
+				}
+			}
 		})
 	]
 });

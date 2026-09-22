@@ -39,11 +39,15 @@ Variáveis de ambiente (ver [`.env.example`](.env.example)):
 |---|---|---|
 | `DB_PATH` | `/data/projman.db` | sim |
 | `FILES_PATH` | `/files` | sim |
-| `ADMIN_PASSWORD_HASH` | hash `scrypt` da senha | sim |
+| `ADMIN_PASSWORD_HASH` | saída de `node scripts/hash-senha.ts` | sim |
+| `SESSION_SECRET` | saída de `openssl rand -base64 48` (mín. 32 chars) | sim |
 | `ORIGIN` | `https://projman.exemplo.com` | sim |
 | `ADDRESS_HEADER` | `CF-Connecting-IP` | atrás do Cloudflare Tunnel |
 | `TZ` | `America/Sao_Paulo` | não |
 | `BODY_SIZE_LIMIT` | `26214400` | não |
+
+Sem `ADMIN_PASSWORD_HASH` ou `SESSION_SECRET` válidos o container **não sobe** — de propósito.
+Para derrubar todas as sessões abertas, troque `SESSION_SECRET` e reinicie.
 
 `ORIGIN` precisa ser a URL pública exata. Sem ela, a proteção de CSRF do
 SvelteKit responde 403 a todo POST atrás do túnel.
