@@ -15,11 +15,11 @@ Gatilho do usuário: **"continue conforme o proximosPassos.md"**. Sem mais nada 
 
 **Passo 1 — a entrega de empacotamento já está feita** (ver seção "Entrega de empacotamento — CONCLUÍDA"). Nada a repetir ali. Teste de container é sempre no Docker local; nunca no UNRAID.
 
-**Passo 2 — planejamento.** Próximo da fronteira: [#9](https://github.com/edalcin/projMan/issues/9), o **schema** — destravado em 2026-09-22 (`blocked_by: 0`) e gargalo de outros cinco tickets. Reivindique com `gh issue edit 9 --add-assignee @me` **antes** de trabalhar. As colunas já fixadas estão em `docs/decisoes/07-views-buckets.md` e `08-datas-fuso-recorrencia.md`. Ao resolver: arquivo em `docs/decisoes/`, comentário na issue, `gh issue close`, e uma linha em *Decisions so far* no corpo da #1.
+**Passo 2 — planejamento.** Próximo da fronteira: [#10](https://github.com/edalcin/projMan/issues/10) (autenticação, sessão e garantias da rota pública). As bases já estão em #3 e #4. Reivindique com `gh issue edit 10 --add-assignee @me` **antes** de trabalhar. O usuário autorizou seguir **direto com a recomendação** em cada pergunta: decida, registre e mostre, sem parar para perguntar. Ao resolver: arquivo em `docs/decisoes/`, comentário na issue, `gh issue close`, e uma linha em *Decisions so far* no corpo da #1.
 
 **Regras desta jornada** (valem em toda sessão):
 - Um ticket por sessão, exceto `research`, que pode ir em paralelo por subagente.
-- Perguntas ao usuário: **uma por vez**, sempre com recomendação.
+- Perguntas ao usuário: **uma por vez**, sempre com recomendação. Desde 2026-09-22 o usuário autorizou assumir a recomendação sem perguntar; ele corrige depois se discordar.
 - Modo `ponytail` (full): a escada YAGNI vale para cada decisão; a opção que remove código ganha.
 - Responda em português, com jargão técnico em inglês, frases curtas.
 - Commit direto na `main`. Nunca criar branch. Nunca commitar segredo.
@@ -29,7 +29,7 @@ Gatilho do usuário: **"continue conforme o proximosPassos.md"**. Sem mais nada 
 
 ## Onde o projeto está
 
-**Fase: planejamento (wayfinding), com o empacotamento já entregue.** O repositório tem o app mínimo SvelteKit, `Dockerfile`, CI, template do UNRAID e `docs/`. Lógica de domínio ainda não existe — espera o schema (#9).
+**Fase: planejamento (wayfinding), com código de base já no ar.** O repositório tem o app mínimo SvelteKit, `Dockerfile`, CI, template do UNRAID, o schema v1 (`migrations/001_inicial.sql`), as regras de data (`src/lib/datas.ts`) e `docs/decisoes/`. `npm test` roda 15 testes. Ainda não há UI de domínio.
 
 O planejamento vive no tracker, não neste arquivo:
 
@@ -88,17 +88,22 @@ Vindas da sessão de charting (14 decisões de escopo) e dos 5 tickets de `resea
 |---|---|---|
 | ~~#7 views e buckets~~ | grilling | **fechado em 2026-09-22** — ver `docs/decisoes/07-views-buckets.md` |
 | ~~#8 datas, fuso e recorrência~~ | grilling | **fechado em 2026-09-22** — ver `docs/decisoes/08-datas-fuso-recorrencia.md`, implementado em `src/lib/datas.ts` |
-| [#9 Schema do SQLite](https://github.com/edalcin/projMan/issues/9) | design | **livre** — destravado por #2, #7 e #8; gargalo de 5 tickets |
-| [#10 Autenticação, sessão e garantias da rota pública](https://github.com/edalcin/projMan/issues/10) | grilling (HITL) | **livre** (destravado por #3 e #4) |
+| ~~#9 schema~~ | design | **fechado em 2026-09-22** — ver `docs/decisoes/09-schema.md`; DDL em `migrations/001_inicial.sql` |
+| [#10 Autenticação, sessão e garantias da rota pública](https://github.com/edalcin/projMan/issues/10) | grilling (HITL) | **livre** |
+| [#11 Smart lists e formato do filtro salvo](https://github.com/edalcin/projMan/issues/11) | grilling | **livre** (o contador da API ainda mostra 1; os bloqueios #8 e #9 estão fechados) |
+| [#12 Feed iCal e pacote de export](https://github.com/edalcin/projMan/issues/12) | grilling | **livre** |
+| [#13 Docker/CI/UNRAID](https://github.com/edalcin/projMan/issues/13) | grilling | **livre** — empacotamento feito; falta backup e política de atualização |
+| [#14 Protótipo do shell](https://github.com/edalcin/projMan/issues/14) | prototype | **livre** |
+| [#16 Protótipo do Kanban](https://github.com/edalcin/projMan/issues/16) | prototype | **livre** |
 
-Bloqueados (esperam #9): [#11 smart lists](https://github.com/edalcin/projMan/issues/11) → [#15 protótipo do filtro](https://github.com/edalcin/projMan/issues/15); [#12 iCal e export](https://github.com/edalcin/projMan/issues/12); [#13 Docker/CI/UNRAID](https://github.com/edalcin/projMan/issues/13) (só a parte de migração/backup); [#14 protótipo do shell](https://github.com/edalcin/projMan/issues/14); [#16 protótipo do Kanban](https://github.com/edalcin/projMan/issues/16). [#17](https://github.com/edalcin/projMan/issues/17) consolida a spec e fecha o mapa.
+Bloqueados: [#15 protótipo do filtro](https://github.com/edalcin/projMan/issues/15) (espera #11); [#17](https://github.com/edalcin/projMan/issues/17) consolida a spec e fecha o mapa (espera todos).
 
-**Caminho crítico**: #9 (schema) → #11 → #15. O schema está livre; #10 (auth) é independente e pode vir a qualquer momento.
+**Caminho crítico**: #11 → #15 → #17. #10 é o próximo por ordem numérica e toca segurança: vale fazer antes dos protótipos.
 
 ## Entrega de empacotamento — CONCLUÍDA (2026-09-22)
 
 - App mínimo SvelteKit (`sv` template `minimal`, TS) com `@sveltejs/adapter-node`; adapter configurado no `vite.config.ts` (o `sv` novo não gera `svelte.config.js`).
-- Rota `GET /api/saude`: confere que o diretório de `DB_PATH` e `FILES_PATH` estão graváveis. Abrir o banco entra aqui quando o schema (#9) existir.
+- Rota `GET /api/saude`: abre o banco (aplica as migrações) e confere que `FILES_PATH` é gravável. Responde `schema vN`.
 - `Dockerfile` multi-stage `node:22-alpine`, `USER 99:100`, `HEALTHCHECK` em Node puro. **O `npm` global é removido da imagem final** — era a fonte dos 11 CVEs HIGH/CRITICAL que reprovavam o Trivy.
 - `.github/workflows/docker.yml`: build local → Trivy (`aquasecurity/trivy-action@v0.36.0`, com `v`) → push `latest` + SHA curto para `ghcr.io/edalcin/projman`. **Verde**, pacote público (pull anônimo confirmado).
 - `.env.example`, `.dockerignore`, template em `deploy/unraid/my-projMan.xml` (também copiado para o servidor), seção de instalação no `README.md`.
@@ -106,7 +111,9 @@ Bloqueados (esperam #9): [#11 smart lists](https://github.com/edalcin/projMan/is
 
 **Regra nova do usuário**: nunca subir container no UNRAID para teste. O UNRAID é só produção e recebe apenas o template XML; todo teste de container é no Docker local (Windows). Já gravada no `AGENTS.md` global.
 
-Falta do ticket [#13](https://github.com/edalcin/projMan/issues/13): migrações, backup e política de atualização — dependem do schema (#9).
+Falta do ticket [#13](https://github.com/edalcin/projMan/issues/13): backup e política de atualização. As migrações já existem (`PRAGMA user_version`, ver #9).
+
+**Armadilha de build**: `better-sqlite3` v13 traz os binários no pacote, mas o npm roda o `node-gyp` implícito por causa do `binding.gyp`. No Alpine isso falha. O `Dockerfile` e o CI usam `npm ci --ignore-scripts`. Não remova.
 
 ## Fatos do ambiente (verificados em 2026-09-21)
 
