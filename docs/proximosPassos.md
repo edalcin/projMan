@@ -18,14 +18,16 @@ Gatilho do usuário: **"continue conforme o proximosPassos.md"**. Sem mais nada 
 **Passo 2 — planejamento.** Próximo da fronteira: [#12](https://github.com/edalcin/projMan/issues/12) (feed iCal e pacote de export). Reivindique com `gh issue edit 12 --add-assignee @me` **antes** de trabalhar. O usuário autorizou seguir **direto com a recomendação** em cada pergunta: decida, registre e mostre, sem parar para perguntar. Ao resolver: arquivo em `docs/decisoes/`, comentário na issue, `gh issue close`, e uma linha em *Decisions so far* no corpo da #1.
 
 **Regras desta jornada** (valem em toda sessão):
-- Um ticket por sessão, exceto `research`, que pode ir em paralelo por subagente.
+- Vários tickets por sessão, em ordem, se o usuário disser "siga". Cada ticket fecha completo (código + teste + doc + issue) antes do próximo. `research` pode ir em paralelo por subagente.
 - Perguntas ao usuário: **uma por vez**, sempre com recomendação. Desde 2026-09-22 o usuário autorizou assumir a recomendação sem perguntar; ele corrige depois se discordar.
 - Modo `ponytail` (full): a escada YAGNI vale para cada decisão; a opção que remove código ganha.
 - Responda em português, com jargão técnico em inglês, frases curtas.
 - Commit direto na `main`. Nunca criar branch. Nunca commitar segredo.
 - Ao encerrar, atualize este documento: estado, o que ficou pendente, e os fatos novos do ambiente.
 
-**Onde estão as coisas**: repositório `D:/git/projMan` (`origin` = `github.com/edalcin/projMan`, público, issues ativas, `gh` autenticado como `edalcin`). Tracker do wayfinder = issues deste repositório. Nenhum job em voo; a sessão de 2026-09-21 fechou com a `main` sincronizada com o `origin` (o último commit é a atualização deste documento).
+**Onde estão as coisas**: repositório `D:/git/projMan` (`origin` = `github.com/edalcin/projMan`, público, issues ativas, `gh` autenticado como `edalcin`). Tracker do wayfinder = issues deste repositório. Nenhum job em voo, nenhum container de teste rodando. A sessão de 2026-09-22 fechou com a `main` sincronizada com o `origin` e o último CI verde.
+
+**Sessão de 2026-09-22 — o que foi feito**: entrega de empacotamento (Dockerfile, CI, template), depois os tickets #7, #8, #9, #10 e #11, fechados nesta ordem. Cada um tem o seu `docs/decisoes/NN-*.md`, comentário na issue e linha em *Decisions so far* na #1.
 
 ## Onde o projeto está
 
@@ -94,9 +96,8 @@ Vindas da sessão de charting (14 decisões de escopo) e dos 5 tickets de `resea
 | [#12 Feed iCal e pacote de export](https://github.com/edalcin/projMan/issues/12) | grilling | **livre** |
 | [#13 Docker/CI/UNRAID](https://github.com/edalcin/projMan/issues/13) | grilling | **livre** — empacotamento feito; falta backup e política de atualização |
 | [#14 Protótipo do shell](https://github.com/edalcin/projMan/issues/14) | prototype | **livre** |
-| [#16 Protótipo do Kanban](https://github.com/edalcin/projMan/issues/16) | prototype | **livre** |
-
 | [#15 Protótipo do filtro salvo](https://github.com/edalcin/projMan/issues/15) | prototype | **livre** (destravado por #11) |
+| [#16 Protótipo do Kanban](https://github.com/edalcin/projMan/issues/16) | prototype | **livre** |
 
 Bloqueados: [#17](https://github.com/edalcin/projMan/issues/17) consolida a spec e fecha o mapa (espera todos).
 
@@ -121,14 +122,24 @@ Falta do ticket [#13](https://github.com/edalcin/projMan/issues/13): backup e po
 
 **Para subir no UNRAID agora** (o template já foi atualizado no servidor): o container **exige** `ADMIN_PASSWORD_HASH` (gere com `node scripts/hash-senha.ts` nesta máquina) e `SESSION_SECRET` (`openssl rand -base64 48`). Sem eles o container sai logo no boot, de propósito.
 
-## Fatos do ambiente (verificados em 2026-09-21)
+## Fatos do ambiente (verificados em 2026-09-22)
 
 - **UNRAID**: `root@192.168.1.10`, chave `C:/Users/EDalcin/.ssh/unraid_ed25519`.
 - **Templates**: `/boot/config/plugins/dockerMan/templates-user/`, com prefixo `my-` (o UNRAID o adiciona).
 - **Pool físico**: `/mnt/cache/appdata` existe — é onde `DB_PATH` deve ficar (ver armadilha 1). Anexos podem ir no share (`/mnt/user/Storage/appsdata/projman/files`), porque não usam WAL.
 - **Porta fixada: 8426** (confirmado: nenhum template do UNRAID a reserva). Ocupadas: 2222, 3123, 3333, 3474, 3773, 3876, 4567, 5678, 6379, 8000, 8070, 8080, 8090, 8100, 8112, 8181, 8321, 8334, 8383, 8432, 8443, 8642, 8778, 8787, 8788, 8989, 9090, 9119, 9696, 58846, 58946.
 - **Local**: Node v22.23.0, npm 10.9.8, Docker 29.1.3 — dá para construir e testar a imagem antes de subir.
-- **Estudo do Vikunja** (desta sessão): inventário de features em `agent://VikunjaFeatures`, domain model com 32 entidades em `agent://VikunjaDomain`. Se os artefatos expirarem, o repositório do Vikunja é a fonte: `pkg/models/*.go`.
+- **Estudo do Vikunja**: os artefatos `agent://VikunjaFeatures` e `agent://VikunjaDomain` provavelmente expiraram. A fonte é o repositório do Vikunja, `pkg/models/*.go`. Quase nada mais depende dele: as decisões estão em `docs/decisoes/`.
+
+## Armadilhas de teste (aprendidas em 2026-09-22)
+
+- **Smoke test na imagem**: sempre `docker build` + `docker run` local, com volume (`-v projman-testdata:/data`), `TZ`, `ORIGIN`, `ADDRESS_HEADER`, `ADMIN_PASSWORD_HASH` e `SESSION_SECRET`. Remova o container e o volume no fim.
+- **Form action do SvelteKit** sem `Accept: text/html` responde JSON com status 200, e não 303. Em testes com cliente HTTP, mande o header.
+- **`tsc --noEmit`** acusa `./$types` ausente até rodar `svelte-kit sync`. O `npm run build` já roda o sync.
+- **Módulo de servidor com efeito no import** (ex.: abrir o banco) precisa do guarda `building` de `$app/environment`: o build do SvelteKit importa as rotas para analisá-las.
+- **Seed de teste gerado pelo Python no Windows**: grave com `encoding='utf-8'`. O padrão é cp1252, e acento chega corrompido ao Node.
+- **`subprocess(shell=True)` no Windows usa `cmd.exe`**: `2>/dev/null` falha. Use lista de args e `cwd`.
+- **Seed dentro do container**: `require('/app/node_modules/better-sqlite3')` com caminho absoluto; um script em `/tmp` não resolve o `node_modules`.
 
 ## Stack fixado (por `AGENTS.md`)
 
