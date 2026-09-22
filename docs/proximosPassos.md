@@ -15,7 +15,7 @@ Gatilho do usuário: **"continue conforme o proximosPassos.md"**. Sem mais nada 
 
 **Passo 1 — a entrega de empacotamento já está feita** (ver seção "Entrega de empacotamento — CONCLUÍDA"). Nada a repetir ali. Teste de container é sempre no Docker local; nunca no UNRAID.
 
-**Passo 2 — planejamento.** Próximo da fronteira: [#8](https://github.com/edalcin/projMan/issues/8) (datas, fuso e recorrência), o último bloqueio do schema. Reivindique com `gh issue edit 8 --add-assignee @me` **antes** de trabalhar, conduza com `grilling` + `domain-modeling`, perguntas **uma por vez** com recomendação. Ao resolver: arquivo em `docs/decisoes/`, comentário na issue, `gh issue close`, e uma linha em *Decisions so far* no corpo da #1.
+**Passo 2 — planejamento.** Próximo da fronteira: [#9](https://github.com/edalcin/projMan/issues/9), o **schema** — destravado em 2026-09-22 (`blocked_by: 0`) e gargalo de outros cinco tickets. Reivindique com `gh issue edit 9 --add-assignee @me` **antes** de trabalhar. As colunas já fixadas estão em `docs/decisoes/07-views-buckets.md` e `08-datas-fuso-recorrencia.md`. Ao resolver: arquivo em `docs/decisoes/`, comentário na issue, `gh issue close`, e uma linha em *Decisions so far* no corpo da #1.
 
 **Regras desta jornada** (valem em toda sessão):
 - Um ticket por sessão, exceto `research`, que pode ir em paralelo por subagente.
@@ -87,12 +87,13 @@ Vindas da sessão de charting (14 decisões de escopo) e dos 5 tickets de `resea
 | Ticket | Tipo | Estado |
 |---|---|---|
 | ~~#7 views e buckets~~ | grilling | **fechado em 2026-09-22** — ver `docs/decisoes/07-views-buckets.md` |
-| [#8 Semântica de datas, fuso e recorrência](https://github.com/edalcin/projMan/issues/8) | grilling (HITL) | **livre** |
+| ~~#8 datas, fuso e recorrência~~ | grilling | **fechado em 2026-09-22** — ver `docs/decisoes/08-datas-fuso-recorrencia.md`, implementado em `src/lib/datas.ts` |
+| [#9 Schema do SQLite](https://github.com/edalcin/projMan/issues/9) | design | **livre** — destravado por #2, #7 e #8; gargalo de 5 tickets |
 | [#10 Autenticação, sessão e garantias da rota pública](https://github.com/edalcin/projMan/issues/10) | grilling (HITL) | **livre** (destravado por #3 e #4) |
 
-Bloqueados: [#9 schema](https://github.com/edalcin/projMan/issues/9) (espera #7, #8, #2) → [#11 smart lists](https://github.com/edalcin/projMan/issues/11) → [#15 protótipo do filtro](https://github.com/edalcin/projMan/issues/15); [#12 iCal e export](https://github.com/edalcin/projMan/issues/12); [#13 Docker/CI/UNRAID](https://github.com/edalcin/projMan/issues/13); [#14 protótipo do shell](https://github.com/edalcin/projMan/issues/14); [#16 protótipo do Kanban](https://github.com/edalcin/projMan/issues/16). [#17](https://github.com/edalcin/projMan/issues/17) consolida a spec e fecha o mapa.
+Bloqueados (esperam #9): [#11 smart lists](https://github.com/edalcin/projMan/issues/11) → [#15 protótipo do filtro](https://github.com/edalcin/projMan/issues/15); [#12 iCal e export](https://github.com/edalcin/projMan/issues/12); [#13 Docker/CI/UNRAID](https://github.com/edalcin/projMan/issues/13) (só a parte de migração/backup); [#14 protótipo do shell](https://github.com/edalcin/projMan/issues/14); [#16 protótipo do Kanban](https://github.com/edalcin/projMan/issues/16). [#17](https://github.com/edalcin/projMan/issues/17) consolida a spec e fecha o mapa.
 
-**Caminho crítico**: #8 → #9 (schema) → #11 → #15. Com #7 fechado, **#8 é o único bloqueio restante do schema**.
+**Caminho crítico**: #9 (schema) → #11 → #15. O schema está livre; #10 (auth) é independente e pode vir a qualquer momento.
 
 ## Entrega de empacotamento — CONCLUÍDA (2026-09-22)
 
