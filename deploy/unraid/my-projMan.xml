@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>projMan</Name>
+  <Repository>ghcr.io/edalcin/projman:latest</Repository>
+  <Registry>https://github.com/edalcin/projMan/pkgs/container/projman</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/edalcin/projMan/issues</Support>
+  <Project>https://github.com/edalcin/projMan</Project>
+  <Overview>Gestor de projetos e tarefas de uso proprio, auto-hospedado. AVISO: DB_PATH deve apontar para o mountpoint fisico do pool (/mnt/cache/appdata/projman), nunca para o share FUSE (/mnt/user/...), porque o modo WAL do SQLite exige memoria compartilhada que o FUSE nao entrega.</Overview>
+  <Category>Productivity:</Category>
+  <WebUI>http://[IP]:[PORT:3000]/</WebUI>
+  <Icon>https://raw.githubusercontent.com/edalcin/projMan/main/static/favicon.svg</Icon>
+  <ExtraParams>--health-start-period=15s</ExtraParams>
+  <PostArgs/>
+  <DonateText/>
+  <DonateLink/>
+  <Config Name="WebUI" Target="3000" Default="8426" Mode="tcp" Description="Porta da interface" Type="Port" Display="always" Required="true" Mask="false">8426</Config>
+  <Config Name="Banco (pool fisico)" Target="/data" Default="/mnt/cache/appdata/projman" Mode="rw" Description="Diretorio do SQLite. Use o mountpoint fisico do pool, nunca /mnt/user." Type="Path" Display="always" Required="true" Mask="false">/mnt/cache/appdata/projman</Config>
+  <Config Name="Anexos" Target="/files" Default="/mnt/user/Storage/appsdata/projman/files" Mode="rw" Description="Diretorio dos anexos" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/Storage/appsdata/projman/files</Config>
+  <Config Name="DB_PATH" Target="DB_PATH" Default="/data/projman.db" Mode="" Description="Arquivo SQLite dentro do container" Type="Variable" Display="advanced" Required="true" Mask="false">/data/projman.db</Config>
+  <Config Name="FILES_PATH" Target="FILES_PATH" Default="/files" Mode="" Description="Diretorio dos anexos dentro do container" Type="Variable" Display="advanced" Required="true" Mask="false">/files</Config>
+  <Config Name="ADMIN_PASSWORD_HASH" Target="ADMIN_PASSWORD_HASH" Default="" Mode="" Description="Hash scrypt da senha de admin" Type="Variable" Display="always" Required="true" Mask="true"/>
+  <Config Name="ORIGIN" Target="ORIGIN" Default="" Mode="" Description="URL publica exata. Sem ela todo POST volta 403." Type="Variable" Display="always" Required="true" Mask="false"/>
+  <Config Name="ADDRESS_HEADER" Target="ADDRESS_HEADER" Default="CF-Connecting-IP" Mode="" Description="Header do IP real atras do Cloudflare Tunnel" Type="Variable" Display="advanced" Required="false" Mask="false">CF-Connecting-IP</Config>
+  <Config Name="TZ" Target="TZ" Default="America/Sao_Paulo" Mode="" Description="Fuso horario" Type="Variable" Display="advanced" Required="false" Mask="false">America/Sao_Paulo</Config>
+  <Config Name="BODY_SIZE_LIMIT" Target="BODY_SIZE_LIMIT" Default="26214400" Mode="" Description="Tamanho maximo de upload em bytes" Type="Variable" Display="advanced" Required="false" Mask="false">26214400</Config>
+</Container>
