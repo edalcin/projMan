@@ -15,7 +15,7 @@ Gatilho do usuário: **"continue conforme o proximosPassos.md"**. Sem mais nada 
 
 **Passo 1 — a entrega de empacotamento já está feita** (ver seção "Entrega de empacotamento — CONCLUÍDA"). Nada a repetir ali. Teste de container é sempre no Docker local; nunca no UNRAID.
 
-**Passo 2 — planejamento.** Próximo da fronteira: [#11](https://github.com/edalcin/projMan/issues/11) (smart lists e formato do filtro salvo). Ele destrava #15 e fica no caminho crítico. `limitesDoDia()` (#8) e os índices parciais (#9) já existem. Reivindique com `gh issue edit 11 --add-assignee @me` **antes** de trabalhar. O usuário autorizou seguir **direto com a recomendação** em cada pergunta: decida, registre e mostre, sem parar para perguntar. Ao resolver: arquivo em `docs/decisoes/`, comentário na issue, `gh issue close`, e uma linha em *Decisions so far* no corpo da #1.
+**Passo 2 — planejamento.** Próximo da fronteira: [#12](https://github.com/edalcin/projMan/issues/12) (feed iCal e pacote de export). Reivindique com `gh issue edit 12 --add-assignee @me` **antes** de trabalhar. O usuário autorizou seguir **direto com a recomendação** em cada pergunta: decida, registre e mostre, sem parar para perguntar. Ao resolver: arquivo em `docs/decisoes/`, comentário na issue, `gh issue close`, e uma linha em *Decisions so far* no corpo da #1.
 
 **Regras desta jornada** (valem em toda sessão):
 - Um ticket por sessão, exceto `research`, que pode ir em paralelo por subagente.
@@ -29,7 +29,7 @@ Gatilho do usuário: **"continue conforme o proximosPassos.md"**. Sem mais nada 
 
 ## Onde o projeto está
 
-**Fase: planejamento (wayfinding), com código de base já no ar.** O repositório tem o app mínimo SvelteKit, `Dockerfile`, CI, template do UNRAID, o schema v1 (`migrations/001_inicial.sql`), as regras de data (`src/lib/datas.ts`), a autenticação (hook, `/login`, `/logout`, `/share/<hash>`) e `docs/decisoes/`. `npm test` roda 20 testes. A única UI de domínio é a página pública do `/share`; o resto vem com os protótipos (#14, #16).
+**Fase: planejamento (wayfinding), com código de base já no ar.** O repositório tem o app mínimo SvelteKit, `Dockerfile`, CI, template do UNRAID, o schema v1 (`migrations/001_inicial.sql`), as regras de data (`src/lib/datas.ts`), a autenticação (hook, `/login`, `/logout`, `/share/<hash>`), as smart lists e o filtro salvo (`src/lib/server/filtro.ts`, `GET /api/tarefas`) e `docs/decisoes/`. `npm test` roda 27 testes. A única UI de domínio é a página pública do `/share`; o resto vem com os protótipos (#14, #16).
 
 O planejamento vive no tracker, não neste arquivo:
 
@@ -90,15 +90,19 @@ Vindas da sessão de charting (14 decisões de escopo) e dos 5 tickets de `resea
 | ~~#8 datas, fuso e recorrência~~ | grilling | **fechado em 2026-09-22** — ver `docs/decisoes/08-datas-fuso-recorrencia.md`, implementado em `src/lib/datas.ts` |
 | ~~#9 schema~~ | design | **fechado em 2026-09-22** — ver `docs/decisoes/09-schema.md`; DDL em `migrations/001_inicial.sql` |
 | ~~#10 autenticação~~ | grilling | **fechado em 2026-09-22** — ver `docs/decisoes/10-autenticacao.md` |
-| [#11 Smart lists e formato do filtro salvo](https://github.com/edalcin/projMan/issues/11) | grilling | **livre** (o contador da API ainda mostra 1; os bloqueios #8 e #9 estão fechados) |
+| ~~#11 smart lists e filtro~~ | grilling | **fechado em 2026-09-22** — ver `docs/decisoes/11-smart-lists-filtro.md` |
 | [#12 Feed iCal e pacote de export](https://github.com/edalcin/projMan/issues/12) | grilling | **livre** |
 | [#13 Docker/CI/UNRAID](https://github.com/edalcin/projMan/issues/13) | grilling | **livre** — empacotamento feito; falta backup e política de atualização |
 | [#14 Protótipo do shell](https://github.com/edalcin/projMan/issues/14) | prototype | **livre** |
 | [#16 Protótipo do Kanban](https://github.com/edalcin/projMan/issues/16) | prototype | **livre** |
 
-Bloqueados: [#15 protótipo do filtro](https://github.com/edalcin/projMan/issues/15) (espera #11); [#17](https://github.com/edalcin/projMan/issues/17) consolida a spec e fecha o mapa (espera todos).
+| [#15 Protótipo do filtro salvo](https://github.com/edalcin/projMan/issues/15) | prototype | **livre** (destravado por #11) |
 
-**Caminho crítico**: #11 → #15 → #17.
+Bloqueados: [#17](https://github.com/edalcin/projMan/issues/17) consolida a spec e fecha o mapa (espera todos).
+
+**Caminho crítico**: #15 → #17. Restam #12, #13, #14, #15 e #16; todos livres.
+
+**Regra nova de schema**: a `001` foi editada no lugar em 2026-09-22 porque ainda não havia banco em produção. **Daqui em diante, toda mudança de schema é uma migração nova** (`002_…sql`), nunca uma edição da `001`.
 
 ## Entrega de empacotamento — CONCLUÍDA (2026-09-22)
 
