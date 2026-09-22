@@ -15,7 +15,7 @@ Gatilho do usuário: **"continue conforme o proximosPassos.md"**. Sem mais nada 
 
 **Passo 1 — a entrega de empacotamento já está feita** (ver seção "Entrega de empacotamento — CONCLUÍDA"). Nada a repetir ali. Teste de container é sempre no Docker local; nunca no UNRAID.
 
-**Passo 2 — planejamento.** Próximo da fronteira: [#10](https://github.com/edalcin/projMan/issues/10) (autenticação, sessão e garantias da rota pública). As bases já estão em #3 e #4. Reivindique com `gh issue edit 10 --add-assignee @me` **antes** de trabalhar. O usuário autorizou seguir **direto com a recomendação** em cada pergunta: decida, registre e mostre, sem parar para perguntar. Ao resolver: arquivo em `docs/decisoes/`, comentário na issue, `gh issue close`, e uma linha em *Decisions so far* no corpo da #1.
+**Passo 2 — planejamento.** Próximo da fronteira: [#11](https://github.com/edalcin/projMan/issues/11) (smart lists e formato do filtro salvo). Ele destrava #15 e fica no caminho crítico. `limitesDoDia()` (#8) e os índices parciais (#9) já existem. Reivindique com `gh issue edit 11 --add-assignee @me` **antes** de trabalhar. O usuário autorizou seguir **direto com a recomendação** em cada pergunta: decida, registre e mostre, sem parar para perguntar. Ao resolver: arquivo em `docs/decisoes/`, comentário na issue, `gh issue close`, e uma linha em *Decisions so far* no corpo da #1.
 
 **Regras desta jornada** (valem em toda sessão):
 - Um ticket por sessão, exceto `research`, que pode ir em paralelo por subagente.
@@ -29,7 +29,7 @@ Gatilho do usuário: **"continue conforme o proximosPassos.md"**. Sem mais nada 
 
 ## Onde o projeto está
 
-**Fase: planejamento (wayfinding), com código de base já no ar.** O repositório tem o app mínimo SvelteKit, `Dockerfile`, CI, template do UNRAID, o schema v1 (`migrations/001_inicial.sql`), as regras de data (`src/lib/datas.ts`) e `docs/decisoes/`. `npm test` roda 15 testes. Ainda não há UI de domínio.
+**Fase: planejamento (wayfinding), com código de base já no ar.** O repositório tem o app mínimo SvelteKit, `Dockerfile`, CI, template do UNRAID, o schema v1 (`migrations/001_inicial.sql`), as regras de data (`src/lib/datas.ts`), a autenticação (hook, `/login`, `/logout`, `/share/<hash>`) e `docs/decisoes/`. `npm test` roda 20 testes. A única UI de domínio é a página pública do `/share`; o resto vem com os protótipos (#14, #16).
 
 O planejamento vive no tracker, não neste arquivo:
 
@@ -89,7 +89,7 @@ Vindas da sessão de charting (14 decisões de escopo) e dos 5 tickets de `resea
 | ~~#7 views e buckets~~ | grilling | **fechado em 2026-09-22** — ver `docs/decisoes/07-views-buckets.md` |
 | ~~#8 datas, fuso e recorrência~~ | grilling | **fechado em 2026-09-22** — ver `docs/decisoes/08-datas-fuso-recorrencia.md`, implementado em `src/lib/datas.ts` |
 | ~~#9 schema~~ | design | **fechado em 2026-09-22** — ver `docs/decisoes/09-schema.md`; DDL em `migrations/001_inicial.sql` |
-| [#10 Autenticação, sessão e garantias da rota pública](https://github.com/edalcin/projMan/issues/10) | grilling (HITL) | **livre** |
+| ~~#10 autenticação~~ | grilling | **fechado em 2026-09-22** — ver `docs/decisoes/10-autenticacao.md` |
 | [#11 Smart lists e formato do filtro salvo](https://github.com/edalcin/projMan/issues/11) | grilling | **livre** (o contador da API ainda mostra 1; os bloqueios #8 e #9 estão fechados) |
 | [#12 Feed iCal e pacote de export](https://github.com/edalcin/projMan/issues/12) | grilling | **livre** |
 | [#13 Docker/CI/UNRAID](https://github.com/edalcin/projMan/issues/13) | grilling | **livre** — empacotamento feito; falta backup e política de atualização |
@@ -98,7 +98,7 @@ Vindas da sessão de charting (14 decisões de escopo) e dos 5 tickets de `resea
 
 Bloqueados: [#15 protótipo do filtro](https://github.com/edalcin/projMan/issues/15) (espera #11); [#17](https://github.com/edalcin/projMan/issues/17) consolida a spec e fecha o mapa (espera todos).
 
-**Caminho crítico**: #11 → #15 → #17. #10 é o próximo por ordem numérica e toca segurança: vale fazer antes dos protótipos.
+**Caminho crítico**: #11 → #15 → #17.
 
 ## Entrega de empacotamento — CONCLUÍDA (2026-09-22)
 
@@ -114,6 +114,8 @@ Bloqueados: [#15 protótipo do filtro](https://github.com/edalcin/projMan/issues
 Falta do ticket [#13](https://github.com/edalcin/projMan/issues/13): backup e política de atualização. As migrações já existem (`PRAGMA user_version`, ver #9).
 
 **Armadilha de build**: `better-sqlite3` v13 traz os binários no pacote, mas o npm roda o `node-gyp` implícito por causa do `binding.gyp`. No Alpine isso falha. O `Dockerfile` e o CI usam `npm ci --ignore-scripts`. Não remova.
+
+**Para subir no UNRAID agora** (o template já foi atualizado no servidor): o container **exige** `ADMIN_PASSWORD_HASH` (gere com `node scripts/hash-senha.ts` nesta máquina) e `SESSION_SECRET` (`openssl rand -base64 48`). Sem eles o container sai logo no boot, de propósito.
 
 ## Fatos do ambiente (verificados em 2026-09-21)
 
