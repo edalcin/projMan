@@ -15,7 +15,7 @@ Gatilho do usuário: **"continue conforme o proximosPassos.md"**. Sem mais nada 
 
 **Passo 1 — a entrega de empacotamento já está feita** (ver seção "Entrega de empacotamento — CONCLUÍDA"). Nada a repetir ali. Teste de container é sempre no Docker local; nunca no UNRAID.
 
-**Passo 2 — voltar ao planejamento.** Com a entrega no ar, siga o mapa: assuma o ticket [#7](https://github.com/edalcin/projMan/issues/7) (primeiro da fronteira), reivindique-o com `gh issue edit 7 --add-assignee @me` **antes** de qualquer trabalho, e conduza-o com as skills `grilling` e `domain-modeling` — é um ticket HITL, então as perguntas vão ao usuário, **uma por vez** (preferência dele), com recomendação em cada uma. Ao resolver: comentário com a resposta, `gh issue close`, e uma linha nova em *Decisions so far* no corpo da issue #1.
+**Passo 2 — planejamento.** Próximo da fronteira: [#8](https://github.com/edalcin/projMan/issues/8) (datas, fuso e recorrência), o último bloqueio do schema. Reivindique com `gh issue edit 8 --add-assignee @me` **antes** de trabalhar, conduza com `grilling` + `domain-modeling`, perguntas **uma por vez** com recomendação. Ao resolver: arquivo em `docs/decisoes/`, comentário na issue, `gh issue close`, e uma linha em *Decisions so far* no corpo da #1.
 
 **Regras desta jornada** (valem em toda sessão):
 - Um ticket por sessão, exceto `research`, que pode ir em paralelo por subagente.
@@ -29,7 +29,7 @@ Gatilho do usuário: **"continue conforme o proximosPassos.md"**. Sem mais nada 
 
 ## Onde o projeto está
 
-**Fase: planejamento (wayfinding).** Não existe código de aplicação ainda. O repositório tem `README.md`, `LICENSE` e este documento.
+**Fase: planejamento (wayfinding), com o empacotamento já entregue.** O repositório tem o app mínimo SvelteKit, `Dockerfile`, CI, template do UNRAID e `docs/`. Lógica de domínio ainda não existe — espera o schema (#9).
 
 O planejamento vive no tracker, não neste arquivo:
 
@@ -86,13 +86,13 @@ Vindas da sessão de charting (14 decisões de escopo) e dos 5 tickets de `resea
 
 | Ticket | Tipo | Estado |
 |---|---|---|
-| [#7 Modelo de views, buckets e configuração por projeto](https://github.com/edalcin/projMan/issues/7) | grilling (HITL) | **livre** |
+| ~~#7 views e buckets~~ | grilling | **fechado em 2026-09-22** — ver `docs/decisoes/07-views-buckets.md` |
 | [#8 Semântica de datas, fuso e recorrência](https://github.com/edalcin/projMan/issues/8) | grilling (HITL) | **livre** |
 | [#10 Autenticação, sessão e garantias da rota pública](https://github.com/edalcin/projMan/issues/10) | grilling (HITL) | **livre** (destravado por #3 e #4) |
 
 Bloqueados: [#9 schema](https://github.com/edalcin/projMan/issues/9) (espera #7, #8, #2) → [#11 smart lists](https://github.com/edalcin/projMan/issues/11) → [#15 protótipo do filtro](https://github.com/edalcin/projMan/issues/15); [#12 iCal e export](https://github.com/edalcin/projMan/issues/12); [#13 Docker/CI/UNRAID](https://github.com/edalcin/projMan/issues/13); [#14 protótipo do shell](https://github.com/edalcin/projMan/issues/14); [#16 protótipo do Kanban](https://github.com/edalcin/projMan/issues/16). [#17](https://github.com/edalcin/projMan/issues/17) consolida a spec e fecha o mapa.
 
-**Caminho crítico**: #7 + #8 → #9 (schema) → #11 → #15. O schema é o gargalo, e os dois tickets que o destravam são independentes entre si.
+**Caminho crítico**: #8 → #9 (schema) → #11 → #15. Com #7 fechado, **#8 é o único bloqueio restante do schema**.
 
 ## Entrega de empacotamento — CONCLUÍDA (2026-09-22)
 
@@ -112,7 +112,7 @@ Falta do ticket [#13](https://github.com/edalcin/projMan/issues/13): migrações
 - **UNRAID**: `root@192.168.1.10`, chave `C:/Users/EDalcin/.ssh/unraid_ed25519`.
 - **Templates**: `/boot/config/plugins/dockerMan/templates-user/`, com prefixo `my-` (o UNRAID o adiciona).
 - **Pool físico**: `/mnt/cache/appdata` existe — é onde `DB_PATH` deve ficar (ver armadilha 1). Anexos podem ir no share (`/mnt/user/Storage/appsdata/projman/files`), porque não usam WAL.
-- **Portas já ocupadas**: 2222, 3123, 3333, 3474, 3773, 3876, 4567, 5678, 6379, 8000, 8070, 8080, 8090, 8100, 8112, 8181, 8321, 8334, 8383, 8432, 8443, 8642, 8778, 8787, 8788, 8989, 9090, 9119, 9696, 58846, 58946. **Sugestão: 8426** (livre na lista; confirmar que nenhum template a reserva antes de fixar).
+- **Porta fixada: 8426** (confirmado: nenhum template do UNRAID a reserva). Ocupadas: 2222, 3123, 3333, 3474, 3773, 3876, 4567, 5678, 6379, 8000, 8070, 8080, 8090, 8100, 8112, 8181, 8321, 8334, 8383, 8432, 8443, 8642, 8778, 8787, 8788, 8989, 9090, 9119, 9696, 58846, 58946.
 - **Local**: Node v22.23.0, npm 10.9.8, Docker 29.1.3 — dá para construir e testar a imagem antes de subir.
 - **Estudo do Vikunja** (desta sessão): inventário de features em `agent://VikunjaFeatures`, domain model com 32 entidades em `agent://VikunjaDomain`. Se os artefatos expirarem, o repositório do Vikunja é a fonte: `pkg/models/*.go`.
 
