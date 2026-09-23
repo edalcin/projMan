@@ -10,10 +10,11 @@ export type Filtro = {
 	v: 1;
 	estado?: 'abertas' | 'feitas' | 'todas'; // default: abertas
 	projetos?: number[];
-	labels?: { in?: number[]; notIn?: number[] };
+	labels?: { in?: number[]; notIn?: number[]; nenhuma?: true }; // nenhuma: sem label alguma (#15)
 	prioridadeMin?: number; // 1..5
 	prazo?: { tipo: 'atrasadas' | 'hoje' | 'sem' } | { tipo: 'proximos'; dias: number };
 	texto?: string;
+	criadaHaMaisDe?: number; // dias, 1..3650 (#15)
 };
 
 export const SMART = {
@@ -45,7 +46,7 @@ const objeto = (x: unknown, campo: string, chaves: string[]): Record<string, unk
  * virar um filtro silenciosamente mais largo.
  */
 export function parseFiltro(entrada: unknown): Filtro {
-	const o = objeto(entrada, 'filtro', ['v', 'estado', 'projetos', 'labels', 'prioridadeMin', 'prazo', 'texto']);
+	const o = objeto(entrada, 'filtro', ['v', 'estado', 'projetos', 'labels', 'prioridadeMin', 'prazo', 'texto', 'criadaHaMaisDe']);
 	if (o.v !== 1) throw new FiltroInvalido('v: só a versão 1 existe');
 	const f: Filtro = { v: 1 };
 	if (o.estado !== undefined) {
@@ -55,10 +56,15 @@ export function parseFiltro(entrada: unknown): Filtro {
 	}
 	if (o.projetos !== undefined) f.projetos = ids(o.projetos, 'projetos');
 	if (o.labels !== undefined) {
-		const l = objeto(o.labels, 'labels', ['in', 'notIn']);
+		const l = objeto(o.labels, 'labels', ['in', 'notIn', 'nenhuma']);
 		f.labels = {};
 		if (l.in !== undefined) f.labels.in = ids(l.in, 'labels.in');
 		if (l.notIn !== undefined) f.labels.notIn = ids(l.notIn, 'labels.notIn');
+		if (l.nenhuma !== undefined) {
+			if (l.nenhuma !== true) throw new FiltroInvalido('labels.nenhuma: só true');
+			if (f.labels.in) throw new FiltroInvalido('labels.nenhuma: não combina com labels.in');
+			f.labels.nenhuma = true;
+		}
 	}
 	if (o.prioridadeMin !== undefined) {
 		if (!Number.isInteger(o.prioridadeMin) || (o.prioridadeMin as number) < 1 || (o.prioridadeMin as number) > 5)
@@ -79,6 +85,11 @@ export function parseFiltro(entrada: unknown): Filtro {
 	if (o.texto !== undefined) {
 		if (typeof o.texto !== 'string' || o.texto.length > 200) throw new FiltroInvalido('texto: até 200 caracteres');
 		if (o.texto.trim()) f.texto = o.texto.trim();
+	}
+	if (o.criadaHaMaisDe !== undefined) {
+		if (!Number.isInteger(o.criadaHaMaisDe) || (o.criadaHaMaisDe as number) < 1 || (o.criadaHaMaisDe as number) > 3650)
+			throw new FiltroInvalido('criadaHaMaisDe: inteiro de 1 a 3650 dias');
+		f.criadaHaMaisDe = o.criadaHaMaisDe as number;
 	}
 	return f;
 }
@@ -145,6 +156,13 @@ export function listarTarefas(
 			`NOT EXISTS (SELECT 1 FROM task_labels tl WHERE tl.task_id = t.id AND tl.label_id IN (${filtro.labels.notIn.map(() => '?').join(',')}))`
 		);
 		params.push(...filtro.labels.notIn);
+	}
+	if (filtro.labels?.nenhuma) {
+		onde.push('NOT EXISTS (SELECT 1 FROM task_labels tl WHERE tl.task_id = t.id)');
+	}
+	if (filtro.criadaHaMaisDe) {
+		onde.push('t.created_at < ?');
+		params.push(new Date(agora - filtro.criadaHaMaisDe * 86_400_000).toISOString());
 	}
 	if (filtro.prioridadeMin) {
 		onde.push('t.priority >= ?');

@@ -55,6 +55,19 @@ test('estado, labels, prioridade e texto combinam por AND', () => {
 	assert.deepEqual(ids(db, { v: 1, texto: 'herb', prazo: { tipo: 'atrasadas' } }), []);
 });
 
+test('os quatro casos do #15 cabem em AND e passam no validador', () => {
+	const db = cenario();
+	db.prepare("UPDATE tasks SET created_at = '2026-08-01T00:00:00.000Z' WHERE id = 6").run();
+	db.prepare("INSERT INTO tasks (id, project_id, title, created_at) VALUES (9, 1, 'sem prazo recente', '2026-09-10T00:00:00.000Z')").run();
+	const casos: [unknown, number[]][] = [
+		[{ v: 1, prazo: { tipo: 'proximos', dias: 7 }, labels: { nenhuma: true } }, [3]],
+		[{ v: 1, prioridadeMin: 3 }, [2, 4]], // alta (3), urgente (4), agora (5): faixa, não OR
+		[{ v: 1, labels: { in: [1] } }, [2, 4]],
+		[{ v: 1, prazo: { tipo: 'sem' }, criadaHaMaisDe: 30 }, [6]]
+	];
+	for (const [json, esperado] of casos) assert.deepEqual(ids(db, parseFiltro(json)), esperado, JSON.stringify(json));
+});
+
 test('texto com sintaxe do FTS5 vira texto, não consulta', () => {
 	const db = cenario();
 	for (const texto of ['"', 'a OR b', 'title:x', 'NEAR(a b)', '*', "'; DROP TABLE tasks; --"])
@@ -93,7 +106,10 @@ test('parseFiltro recusa forma errada em vez de alargar o filtro', () => {
 		{ v: 1, prazo: { tipo: 'hoje', dias: 3 } },
 		{ v: 1, prazo: { tipo: 'ontem' } },
 		{ v: 1, estado: 'todas as coisas' },
-		{ v: 1, texto: 'x'.repeat(201) }
+		{ v: 1, texto: 'x'.repeat(201) },
+		{ v: 1, labels: { nenhuma: false } },
+		{ v: 1, labels: { in: [1], nenhuma: true } }, // contradição: sempre vazio
+		{ v: 1, criadaHaMaisDe: 0 }
 	];
 	for (const f of invalidos) assert.throws(() => parseFiltro(f), FiltroInvalido, JSON.stringify(f));
 	assert.deepEqual(parseFiltro({ v: 1, texto: '   ' }), { v: 1 }, 'texto vazio some');
