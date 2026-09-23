@@ -33,7 +33,9 @@ Gatilho do usuário: **"continue conforme o proximosPassos.md"**. Sem mais nada 
 
 **Sessão de 2026-09-23 (2)**: ticket #13 fechado — backup pelo plugin *Appdata Backup* (para o container, cópia segura), atualização por `latest`, e `migrar()` agora grava `projman.db.v<N>.bak` antes de migrar banco em uso (rollback = SHA anterior + renomear o `.bak`). README ganhou "Backup automático" e "Atualização e volta atrás". `npm test` roda 31 testes.
 
-**Amanhã**: comece pelo #14 (shell), depois #16 e #15.
+**Sessão de 2026-09-23 (3)**: #14 em andamento. Protótipo com 3 variantes do shell na branch descartável `prototipo/14-shell` (link na issue). **Falta**: o usuário escolher a variante; então grave `docs/decisoes/14-shell.md`, feche a #14 e ponha a linha na #1. Nada do protótipo entra na `main`. Para ver: `git switch prototipo/14-shell`, `npm run dev` com `ADMIN_PASSWORD_HASH=scrypt:x` e `SESSION_SECRET` (≥32 chars), abrir `/prototipo/shell`.
+
+**Amanhã**: feche a #14 com a escolha, depois #16 e #15.
 
 ## Onde o projeto está
 
