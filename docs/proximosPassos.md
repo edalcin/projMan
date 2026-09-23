@@ -104,6 +104,7 @@ python scripts/seed-vikunja.py "Entre Ciências" .dev-wipe-me.db --substituir
 
 - **UNRAID**: `root@192.168.1.10`, chave `C:/Users/EDalcin/.ssh/unraid_ed25519`. Templates em `/boot/config/plugins/dockerMan/templates-user/` (prefixo `my-`).
 - **Volumes em produção (decisão do usuário, 2026-09-23)**: banco em `/mnt/user/Storage/appsdata/projman/db/projman.db` (share do array, disk2), anexos em `/mnt/user/Storage/appsdata/projman/files`. O usuário conhece o risco do WAL no FUSE e escolheu assim; não reabra o assunto. Backup (Appdata Backup ou `/api/export`) deve cobrir esse caminho.
+- **Carga feita em 2026-09-23 19:37**: produção recebeu "Entre Ciências" do Vikunja (59 tarefas, 14 subtarefas, 5 labels). O banco vazio anterior ficou em `.../projman/db/antes-da-carga/`. Depois dessa data a produção tem dados reais: não rode o script contra ela de novo sem export antes.
 - **Porta: 8426.**
 - **Local**: Node v22.23.0, npm 10.9.8, Docker 29.1.3.
 
