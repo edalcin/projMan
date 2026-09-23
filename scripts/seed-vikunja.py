@@ -1,13 +1,15 @@
-"""Banco de DEV com dados reais de um projeto do Vikunja (só leitura na API).
+"""Banco novo com os dados de um projeto do Vikunja (só leitura na API).
 
-Não é importador do produto (importadores estão fora do v1): serve para testar
-a UI com dados de verdade. Recria o banco do zero.
+Não é importador do produto (importadores estão fora do v1). Serve para o banco
+de dev e para a carga inicial da produção. Cria o banco do zero:
 
-    VIKUNJA_TOKEN=tk_... python scripts/seed-vikunja.py "Entre Ciências" .dev-wipe-me.db
+    python scripts/seed-vikunja.py "Entre Ciências" .dev-wipe-me.db
+    python scripts/seed-vikunja.py "Entre Ciências" projman.db --substituir
 
-O token vem só do ambiente; nunca o grave em arquivo. Fica de fora: comentários
-e anexos (UI nos itens 8), descrição rica (só o texto vai para description_text
-até a sanitização do item 4).
+VIKUNJA_URL e VIKUNJA_TOKEN vêm do ambiente ou do `.env` local (ignorado pelo
+git; nunca commitar). Um banco que já existe só é trocado com `--substituir`.
+Fica de fora: comentários e anexos (item 8) e o HTML da descrição (só o texto
+vai para description_text até a sanitização do item 4).
 """
 
 import html
@@ -18,6 +20,14 @@ import sqlite3
 import sys
 import urllib.request
 from pathlib import Path
+
+# .env local sem dependência: KEY=valor por linha; o ambiente tem precedência.
+_env = Path(__file__).resolve().parent.parent / '.env'
+if _env.exists():
+    for _linha in _env.read_text(encoding='utf-8').splitlines():
+        _k, _, _v = _linha.partition('=')
+        if _v and not _k.lstrip().startswith('#'):
+            os.environ.setdefault(_k.strip(), _v.strip())
 
 API = os.environ.get('VIKUNJA_URL', 'https://vikunja.dalc.in/api/v1')
 NULO = '0001-01-01T00:00:00Z'  # "sem data" no Vikunja
@@ -53,7 +63,10 @@ def texto(h):
     return html.unescape(re.sub(r'<[^>]+>', ' ', re.sub(r'<!--.*?-->', '', h or ''))).split()
 
 
-def main(nome, destino):
+def main(nome, destino, substituir):
+    # Proteção contra perda de dados: trocar um banco existente exige pedido explícito.
+    if Path(destino).exists() and not substituir:
+        sys.exit(f'{destino} já existe. Use --substituir para apagá-lo e recriar.')
     projeto = next(p for p in vk('/projects')[0] if p['title'] == nome)
     views = {v['view_kind']: v for v in vk(f'/projects/{projeto["id"]}/views')[0]}
     lista = views['list']['id']
@@ -115,4 +128,5 @@ def main(nome, destino):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2])
+    args = [a for a in sys.argv[1:] if a != '--substituir']
+    main(args[0], args[1], '--substituir' in sys.argv)

@@ -80,10 +80,12 @@ Cada item fecha completo antes do próximo. Entre parênteses, a origem.
 O banco de dev (`.dev-wipe-me.db`, ignorado pelo git) usa o projeto **"Entre Ciências"** do Vikunja do usuário (`https://vikunja.dalc.in`): 59 tarefas, 14 subtarefas, 5 labels, prazos em 2027–2028 (as smart lists Hoje/7 dias/Atrasadas ficam vazias; "Sem prazo" tem 35). Para recriar:
 
 ```sh
-VIKUNJA_TOKEN=<token do usuário> python scripts/seed-vikunja.py "Entre Ciências" .dev-wipe-me.db
+python scripts/seed-vikunja.py "Entre Ciências" .dev-wipe-me.db --substituir
 ```
 
-O token **nunca** vai para arquivo nem commit: peça ao usuário quando precisar. O script só lê a API (GET), recria o banco do zero e deixa de fora comentários, anexos e o HTML da descrição (só o texto vai para `description_text`). Quando os itens 4 e 8 estiverem prontos, estenda o script para eles. Sem `User-Agent` o Cloudflare do Vikunja responde 403. Pare o dev server (e feche conexões) antes de rodar: no Windows o arquivo aberto não pode ser apagado.
+`VIKUNJA_URL` e `VIKUNJA_TOKEN` estão no **`.env` local** (ignorado pelo git; o `.env.example` só tem placeholders). Nunca commite o `.env`. O script só lê a API (GET) e cria o banco do zero; um banco que já existe só é trocado com `--substituir`. Ficam de fora comentários, anexos e o HTML da descrição (só o texto vai para `description_text`); estenda quando os itens 4 e 8 estiverem prontos. Sem `User-Agent` o Cloudflare do Vikunja responde 403. No Windows, pare o dev server antes: arquivo aberto não pode ser apagado.
+
+**Carga na produção** (pedido do usuário; faça só quando ele pedir): gere `projman.db` nesta máquina com o script; no UNRAID pare o container, copie o arquivo para `/mnt/cache/appdata/projman/projman.db` (apague `projman.db-wal`/`-shm` antigos), acerte o dono (`chown 99:100`) e suba o container. O banco antigo da produção é substituído: faça antes um export (`/api/export`) ou deixe o Appdata Backup rodar.
 
 ### Armadilhas de teste
 
