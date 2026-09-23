@@ -88,7 +88,7 @@
 		<Sidebar.Footer><Tema /></Sidebar.Footer>
 	</Sidebar.Root>
 
-	<Sidebar.Inset>
+	<Sidebar.Inset class="min-w-0">
 		<header class="flex h-12 items-center gap-2 border-b px-3 md:hidden">
 			<Sidebar.Trigger />
 			<span class="font-semibold">projMan</span>

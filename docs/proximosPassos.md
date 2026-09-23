@@ -75,6 +75,16 @@ Cada item fecha completo antes do próximo. Entre parênteses, a origem.
 - **O container exige** `ADMIN_PASSWORD_HASH` (gere com `node scripts/hash-senha.ts`) e `SESSION_SECRET` (`openssl rand -base64 48`). Sem eles o processo sai no boot, de propósito.
 - **Instantes** só no formato de `Date.toISOString()` (o `CHECK` do banco impõe): comparar ISO como texto só funciona com um formato.
 
+### Dados de teste (reais)
+
+O banco de dev (`.dev-wipe-me.db`, ignorado pelo git) usa o projeto **"Entre Ciências"** do Vikunja do usuário (`https://vikunja.dalc.in`): 59 tarefas, 14 subtarefas, 5 labels, prazos em 2027–2028 (as smart lists Hoje/7 dias/Atrasadas ficam vazias; "Sem prazo" tem 35). Para recriar:
+
+```sh
+VIKUNJA_TOKEN=<token do usuário> python scripts/seed-vikunja.py "Entre Ciências" .dev-wipe-me.db
+```
+
+O token **nunca** vai para arquivo nem commit: peça ao usuário quando precisar. O script só lê a API (GET), recria o banco do zero e deixa de fora comentários, anexos e o HTML da descrição (só o texto vai para `description_text`). Quando os itens 4 e 8 estiverem prontos, estenda o script para eles. Sem `User-Agent` o Cloudflare do Vikunja responde 403. Pare o dev server (e feche conexões) antes de rodar: no Windows o arquivo aberto não pode ser apagado.
+
 ### Armadilhas de teste
 
 - **Smoke test da imagem**: `docker build` + `docker run` local, com volume (`-v projman-testdata:/data`), `TZ`, `ORIGIN`, `ADDRESS_HEADER`, `ADMIN_PASSWORD_HASH` e `SESSION_SECRET`. Remova o container e o volume no fim.
