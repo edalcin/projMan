@@ -25,11 +25,13 @@ Gatilho do usuário: **"continue conforme o proximosPassos.md"**. Sem mais nada 
 - Commit direto na `main`. Nunca criar branch. Nunca commitar segredo.
 - Ao encerrar, atualize este documento: estado, o que ficou pendente, e os fatos novos do ambiente.
 
-**Onde estão as coisas**: repositório `D:/git/projMan` (`origin` = `github.com/edalcin/projMan`, público, issues ativas, `gh` autenticado como `edalcin`). Tracker do wayfinder = issues deste repositório. Nenhum job em voo, nenhum container de teste rodando. A sessão de 2026-09-22 fechou com a `main` sincronizada com o `origin` e o último CI verde.
+**Onde estão as coisas**: repositório `D:/git/projMan` (`origin` = `github.com/edalcin/projMan`, público, issues ativas, `gh` autenticado como `edalcin`). Tracker do wayfinder = issues deste repositório. Nenhum job em voo, nenhum container de teste rodando (container, volumes e imagem `projman:teste` removidos). A sessão de 2026-09-23 fechou com a `main` sincronizada com o `origin` no commit `c8d97a8`+docs e o último CI verde.
 
 **Sessão de 2026-09-22 — o que foi feito**: entrega de empacotamento (Dockerfile, CI, template), depois os tickets #7, #8, #9, #10 e #11, fechados nesta ordem. Cada um tem o seu `docs/decisoes/NN-*.md`, comentário na issue e linha em *Decisions so far* na #1.
 
-**Sessão de 2026-09-23**: ticket #12 fechado — feed iCal (`/ical/<ICAL_TOKEN>`) e export `.tar.gz` (`/api/export`). Variável nova opcional `ICAL_TOKEN` no `.env.example`, README e template (template já copiado de novo para o servidor).
+**Sessão de 2026-09-23**: ticket #12 fechado — feed iCal (`/ical/<ICAL_TOKEN>`) e export `.tar.gz` (`/api/export`). Variável nova opcional `ICAL_TOKEN` no `.env.example`, README e template (template já copiado de novo para o servidor). A decisão de charting "export `.zip` com dump JSON" foi trocada por `.tar.gz` com snapshot `.db`; a #1 já reflete isso. Nada ficou pela metade.
+
+**Amanhã**: comece pelo #13. O que resta dele: (a) backup automático — recomendação provável: plugin *Appdata Backup* do UNRAID sobre os dois volumes, ou export agendado; (b) política de atualização da imagem (`latest` vs SHA fixo, migração no boot já existe). O export do #12 já é o backup manual.
 
 ## Onde o projeto está
 
@@ -141,7 +143,8 @@ Falta do ticket [#13](https://github.com/edalcin/projMan/issues/13): backup e po
 - **Módulo de servidor com efeito no import** (ex.: abrir o banco) precisa do guarda `building` de `$app/environment`: o build do SvelteKit importa as rotas para analisá-las.
 - **Seed de teste gerado pelo Python no Windows**: grave com `encoding='utf-8'`. O padrão é cp1252, e acento chega corrompido ao Node.
 - **`subprocess(shell=True)` no Windows usa `cmd.exe`**: `2>/dev/null` falha. Use lista de args e `cwd`.
-- **Seed dentro do container**: `require('/app/node_modules/better-sqlite3')` com caminho absoluto; um script em `/tmp` não resolve o `node_modules`.
+- **Snapshot do export**: `VACUUM INTO` grava em `tmpdir()`; o teste confere que nenhum `projman-export-*` sobra. No container, `/tmp` deve ficar vazio depois do download.
+- **Sessão em smoke test sem login**: monte o cookie à mão — `sessao=<expira ms>.<base64url(HMAC-SHA256(SESSION_SECRET, expira))>`. `ADMIN_PASSWORD_HASH=scrypt:x` basta para o boot (só o prefixo é checado).
 
 ## Stack fixado (por `AGENTS.md`)
 
