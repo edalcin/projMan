@@ -15,7 +15,7 @@ Gatilho do usuário: **"continue conforme o proximosPassos.md"**. Sem mais nada 
 
 **Passo 1 — a entrega de empacotamento já está feita** (ver seção "Entrega de empacotamento — CONCLUÍDA"). Nada a repetir ali. Teste de container é sempre no Docker local; nunca no UNRAID.
 
-**Passo 2 — planejamento.** Próximo da fronteira: o protótipo [#15](https://github.com/edalcin/projMan/issues/15) (filtro salvo, skill `prototype`); depois [#17](https://github.com/edalcin/projMan/issues/17) consolida a spec e fecha o mapa. Reivindique com `gh issue edit <n> --add-assignee @me` **antes** de trabalhar. O usuário autorizou seguir **direto com a recomendação** em cada pergunta: decida, registre e mostre, sem parar para perguntar. Ao resolver: arquivo em `docs/decisoes/`, comentário na issue, `gh issue close`, e uma linha em *Decisions so far* no corpo da #1.
+**Passo 2 — planejamento.** Único ticket restante: [#17](https://github.com/edalcin/projMan/issues/17) — consolidar a spec (spec funcional em `docs/`, C4 em Mermaid, ADRs, `CONTEXT.md`, backlog de build) e fechar o mapa #1. Fonte: `docs/decisoes/*.md` + *Decisions so far* da #1. Reivindique com `gh issue edit <n> --add-assignee @me` **antes** de trabalhar. O usuário autorizou seguir **direto com a recomendação** em cada pergunta: decida, registre e mostre, sem parar para perguntar.
 
 **Regras desta jornada** (valem em toda sessão):
 - Vários tickets por sessão, em ordem, se o usuário disser "siga". Cada ticket fecha completo (código + teste + doc + issue) antes do próximo. `research` pode ir em paralelo por subagente.
@@ -35,7 +35,9 @@ Gatilho do usuário: **"continue conforme o proximosPassos.md"**. Sem mais nada 
 
 **Sessão de 2026-09-23 (3)**: #14 e #16 fechados. #14: variante A no desktop + criação por FAB/folha no celular (`docs/decisoes/14-shell.md`, branch `prototipo/14-shell`). #16: ponto médio confirmado, passo 1024, SortableJS com `forceFallback` e pressão longa no toque, servidor calcula a posição, sem virtualização (`docs/decisoes/16-kanban.md`, branch `prototipo/16-kanban`). Para ver um protótipo: `git switch <branch>`, `npm install`, `npm run dev` com `ADMIN_PASSWORD_HASH=scrypt:x` e `SESSION_SECRET` (≥32 chars), abrir `/prototipo/<nome>`. Volte à `main` com `npm ci --ignore-scripts` depois.
 
-**Amanhã**: #15 (protótipo do filtro salvo), depois #17.
+**Sessão de 2026-09-23 (4)**: #15 fechado — AND puro basta; o formato v1 ganhou `labels.nenhuma` e `criadaHaMaisDe` (código + teste na `main`, `npm test` = 32), `docs/decisoes/15-filtro-salvo.md`, branch `prototipo/15-filtro`.
+
+**Amanhã**: #17, o último — consolida a spec e fecha o mapa.
 
 ## Onde o projeto está
 
@@ -104,12 +106,12 @@ Vindas da sessão de charting (14 decisões de escopo) e dos 5 tickets de `resea
 | ~~#12 feed iCal e export~~ | grilling | **fechado em 2026-09-23** — ver `docs/decisoes/12-ical-export.md` |
 | ~~#13 Docker/CI/UNRAID~~ | grilling | **fechado em 2026-09-23** — ver `docs/decisoes/13-backup-atualizacao.md` |
 | ~~#14 Protótipo do shell~~ | prototype | **fechado em 2026-09-23** — ver `docs/decisoes/14-shell.md` |
-| [#15 Protótipo do filtro salvo](https://github.com/edalcin/projMan/issues/15) | prototype | **livre** (destravado por #11) |
+| ~~#15 Protótipo do filtro salvo~~ | prototype | **fechado em 2026-09-23** — ver `docs/decisoes/15-filtro-salvo.md` |
 | ~~#16 Protótipo do Kanban~~ | prototype | **fechado em 2026-09-23** — ver `docs/decisoes/16-kanban.md` |
 
 Bloqueados: [#17](https://github.com/edalcin/projMan/issues/17) consolida a spec e fecha o mapa (espera todos).
 
-**Caminho crítico**: #15 → #17. Resta só o #15 antes do #17.
+**Caminho crítico**: só o #17 resta, e está destravado.
 
 **Regra nova de schema**: a `001` foi editada no lugar em 2026-09-22 porque ainda não havia banco em produção. **Daqui em diante, toda mudança de schema é uma migração nova** (`002_…sql`), nunca uma edição da `001`.
 
