@@ -38,11 +38,16 @@
 
 			<Sidebar.Group>
 				<Sidebar.GroupLabel>Projetos</Sidebar.GroupLabel>
+				<Sidebar.GroupAction title="Gerenciar projetos e labels">
+					{#snippet child({ props })}
+						<a href="/projetos" {...props}><i class="bx bx-cog"></i><span class="sr-only">Gerenciar projetos e labels</span></a>
+					{/snippet}
+				</Sidebar.GroupAction>
 				<Sidebar.Menu>
 					{#each ativos as p (p.id)}
 						{@render item(`/?projeto=${p.id}`, 'bx-folder', p.title, q.get('projeto') === String(p.id))}
 					{:else}
-						<p class="px-2 text-xs text-muted-foreground">Nenhum projeto ainda.</p>
+						<p class="px-2 text-xs text-muted-foreground">Nenhum projeto ainda. <a href="/projetos" class="underline">Criar</a></p>
 					{/each}
 				</Sidebar.Menu>
 			</Sidebar.Group>
