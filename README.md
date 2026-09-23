@@ -53,6 +53,12 @@ Para derrubar todas as sessões abertas, troque `SESSION_SECRET` e reinicie.
 `ORIGIN` precisa ser a URL pública exata. Sem ela, a proteção de CSRF do
 SvelteKit responde 403 a todo POST atrás do túnel.
 
+**Acesse sempre pela URL do `ORIGIN`** (ex.: `https://projman.exemplo.com`), não
+pelo IP da LAN (`http://192.168.x.x:8426`, o botão WebUI do UNRAID). Pelo IP, o
+login falha com "Cross-site POST form submissions are forbidden": a origem não
+bate com `ORIGIN`, e o cookie de sessão é `Secure`, então o navegador não o
+guarda em HTTP. Pela LAN, use a mesma URL pública (o túnel resolve).
+
 Saúde do container: `GET /api/saude` — confirma que os dois volumes estão
 graváveis. É o que o `HEALTHCHECK` da imagem chama.
 

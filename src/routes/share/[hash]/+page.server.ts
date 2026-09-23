@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
+import { TZ } from '$lib/server/tz';
 import type { PageServerLoad } from './$types';
 
 // Read-only por construção (#10): este grupo de rotas só tem `load`. Nenhuma
@@ -29,5 +30,5 @@ export const load: PageServerLoad = ({ params }) => {
 			 ORDER BY t.done, tp.position, t.id`
 		)
 		.all(projeto.id);
-	return { projeto, tarefas };
+	return { projeto, tarefas, tz: TZ };
 };

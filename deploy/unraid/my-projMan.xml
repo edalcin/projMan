@@ -9,7 +9,7 @@
   <Privileged>false</Privileged>
   <Support>https://github.com/edalcin/projMan/issues</Support>
   <Project>https://github.com/edalcin/projMan</Project>
-  <Overview>Gestor de projetos e tarefas de uso proprio, auto-hospedado. AVISO: DB_PATH deve apontar para o mountpoint fisico do pool (/mnt/cache/appdata/projman), nunca para o share FUSE (/mnt/user/...), porque o modo WAL do SQLite exige memoria compartilhada que o FUSE nao entrega.</Overview>
+  <Overview>Gestor de projetos e tarefas de uso proprio, auto-hospedado. ACESSO: use sempre a URL publica definida em ORIGIN (via Cloudflare Tunnel); pelo IP da LAN (botao WebUI) o login falha com "Cross-site POST form submissions are forbidden". AVISO: DB_PATH deve apontar para o mountpoint fisico do pool (/mnt/cache/appdata/projman), nunca para o share FUSE (/mnt/user/...), porque o modo WAL do SQLite exige memoria compartilhada que o FUSE nao entrega.</Overview>
   <Category>Productivity:</Category>
   <WebUI>http://[IP]:[PORT:3000]/</WebUI>
   <Icon>https://raw.githubusercontent.com/edalcin/projMan/main/static/icon-512.png</Icon>
