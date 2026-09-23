@@ -133,9 +133,10 @@ export type Linha = {
 export function listarTarefas(
 	db: Database.Database,
 	filtro: Filtro,
-	{ tz, agora = Date.now(), cursor }: { tz: string; agora?: number; cursor?: string }
+	{ tz, agora = Date.now(), cursor, arquivados = false }: { tz: string; agora?: number; cursor?: string; arquivados?: boolean }
 ): { tarefas: Linha[]; cursor: string | null } {
-	const onde = ['p.archived = 0']; // projeto arquivado some das listas e dos filtros
+	// projeto arquivado some das listas e dos filtros; só a página do próprio projeto o mostra
+	const onde = arquivados ? ['1'] : ['p.archived = 0'];
 	const params: unknown[] = [];
 
 	const estado = filtro.estado ?? 'abertas';
@@ -232,4 +233,26 @@ function lerCursor(cursor: string): Cursor {
 		// cai no erro abaixo
 	}
 	throw new FiltroInvalido('cursor inválido');
+}
+
+/**
+ * Consulta da URL → filtro: `lista=<smart>`, `filtro=<id salvo>` ou `projeto=<id>`.
+ * Ponto único da página e da API. `projeto` mostra também projeto arquivado
+ * (a sidebar leva até ele); smart lists e filtros continuam sem arquivados (#11).
+ */
+export function resolverFiltro(
+	db: Database.Database,
+	q: URLSearchParams
+): { filtro: Filtro; arquivados: boolean } | null {
+	const lista = q.get('lista');
+	if (lista && Object.hasOwn(SMART, lista)) return { filtro: SMART[lista as keyof typeof SMART], arquivados: false };
+	const id = q.get('filtro');
+	if (id && /^\d+$/.test(id)) {
+		const salvo = db.prepare('SELECT filter FROM saved_filters WHERE id = ?').pluck().get(+id);
+		// revalida na leitura: o banco pode ter sido editado à mão
+		return typeof salvo === 'string' ? { filtro: parseFiltro(JSON.parse(salvo)), arquivados: false } : null;
+	}
+	const projeto = q.get('projeto');
+	if (projeto && /^\d+$/.test(projeto)) return { filtro: { v: 1, projetos: [+projeto] }, arquivados: true };
+	return null;
 }

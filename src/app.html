@@ -1,9 +1,15 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="text-scale" content="scale" />
+		<script nonce="%sveltekit.nonce%">
+			// Tema antes da pintura (sem piscar): escolha gravada, senão a do sistema.
+			const t = localStorage.getItem('tema');
+			if (t ? t === 'escuro' : matchMedia('(prefers-color-scheme: dark)').matches)
+				document.documentElement.classList.add('dark');
+		</script>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">

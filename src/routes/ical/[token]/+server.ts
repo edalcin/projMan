@@ -4,7 +4,7 @@ import { db } from '$lib/server/db';
 import { feedIcal, tokenValido } from '$lib/server/ical';
 import type { RequestHandler } from './$types';
 
-const TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+import { TZ } from '$lib/server/tz';
 
 /**
  * GET /ical/<ICAL_TOKEN> — feed de calendário (#12). Público: o cliente de

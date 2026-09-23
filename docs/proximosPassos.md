@@ -5,18 +5,19 @@
 
 ## Estado atual
 
-**Fase: build do v1.** O planejamento terminou em 2026-09-23: o mapa ([#1](https://github.com/edalcin/projMan/issues/1)) e os tickets #2–#17 estão fechados. Nada resta a decidir. A próxima sessão escreve código.
+**Fase: build do v1.** O planejamento terminou em 2026-09-23 (mapa [#1](https://github.com/edalcin/projMan/issues/1) fechado). Item 1 do backlog pronto; o próximo é o **item 2**.
 
-O que já existe e funciona (`npm test`: 32 testes):
+O que já existe e funciona (`npm test`: 33 testes):
 
 - `Dockerfile`, CI (build → Trivy → push para `ghcr.io/edalcin/projman`), template do UNRAID em `deploy/unraid/my-projMan.xml`, README com instalação, backup e atualização.
 - Schema v1 (`migrations/001_inicial.sql`) e as migrações no boot, com snapshot `.bak` antes de migrar (`src/lib/server/migrar.ts`).
-- Regras de data e recorrência (`src/lib/datas.ts`).
+- Regras de data e recorrência (`src/lib/datas.ts`); texto do prazo na lista (`src/lib/prazo.ts`).
 - Autenticação: hook, `/login`, `/logout`, sessão HMAC, rate limit.
-- Smart lists e filtro salvo no servidor (`src/lib/server/filtro.ts`, `GET /api/tarefas`).
+- Smart lists, filtro salvo e página de projeto no servidor: `resolverFiltro` + `listarTarefas` (`src/lib/server/filtro.ts`), `GET /api/tarefas?lista=|filtro=|projeto=`.
+- **Shell da UI** (item 1): Tailwind v4 + shadcn-svelte (preset Vega, base neutra, fonte do sistema), Boxicons. Rota `/` no grupo `src/routes/(app)/`: sidebar do shadcn (smart lists, projetos, filtros salvos, "Arquivados" recolhido, tema), drawer no celular, lista com a primeira página no SSR e rolagem infinita, skeleton, vazio e erro inline com "Tentar de novo". Tema por `prefers-color-scheme` + `localStorage`, aplicado antes da pintura em `src/app.html`.
 - Página pública `/share/<hash>` (só leitura), feed iCal `/ical/<token>`, export `/api/export`, saúde `/api/saude`.
 
-Ainda não existe: toda a UI de domínio (só a do `/share` existe), as mutações, a sanitização, os anexos, o PWA.
+Ainda não existe: CRUD de projeto/label/tarefa, detalhe da tarefa, mutações, sanitização, anexos, PWA.
 
 ## Onde está a spec
 
@@ -51,7 +52,7 @@ Gatilho do usuário: **"continue conforme o proximosPassos.md"**. Então:
 
 Cada item fecha completo antes do próximo. Entre parênteses, a origem.
 
-1. **Base da UI.** Tailwind + shadcn-svelte (tema padrão, base neutra), Boxicons, fonte do sistema. Tema claro/escuro por `prefers-color-scheme` + alternância guardada em `localStorage`. Shell do #14: sidebar fixa (smart lists, projetos, filtros salvos, seção "Arquivados" recolhida, tema), drawer no celular. As smart lists leem `GET /api/tarefas` com rolagem infinita por cursor. Estados vazio, carregando (skeleton) e erro inline. (#14, #11, decisão 17)
+1. ✅ **Base da UI.** Tailwind + shadcn-svelte (tema padrão, base neutra), Boxicons, fonte do sistema. Tema claro/escuro por `prefers-color-scheme` + alternância guardada em `localStorage`. Shell do #14: sidebar fixa (smart lists, projetos, filtros salvos, seção "Arquivados" recolhida, tema), drawer no celular. As smart lists leem `GET /api/tarefas` com rolagem infinita por cursor. Estados vazio, carregando (skeleton) e erro inline. (#14, #11, decisão 17) — *feito em 2026-09-23. A página de projeto hoje é a mesma lista (`/?projeto=<id>`, mostra também arquivado); vira List view no item 5. Os ícones internos dos componentes shadcn vêm de `@lucide/svelte`; os nossos são Boxicons.*
 2. **Projetos e labels.** Criar, renomear, reordenar (`projects.position`), arquivar/desarquivar, apagar (físico, com confirmação). Labels globais: criar, cor, apagar. (#9)
 3. **Tarefa.** Criação rápida (campo no topo + data no desktop; FAB + folha no celular). Detalhe em painel lateral com `?tarefa=<id>` (tela cheia no celular): título, prazo (com ou sem hora), prioridade 0–5, labels, recorrência, projeto. `marcarFeita` é o ponto único que escreve `done`, move o card para o bucket de feitas e avança a recorrência (`src/lib/datas.ts`). Subtarefas em um nível. Checkbox inline otimista com rollback. (#7, #8, #14)
 4. **Descrição rica.** TipTap no detalhe; `sanitize-html` na escrita, com a whitelist do #4; segunda passagem produz `description_text` para o FTS5. (#4, ADR 0002)

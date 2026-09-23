@@ -21,3 +21,8 @@ Thumbs.db
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Bancos locais de dev/protótipo
+/*.db
+/*.db-shm
+/*.db-wal
