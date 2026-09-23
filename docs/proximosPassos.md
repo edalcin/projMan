@@ -15,14 +15,14 @@ Gatilho do usuário: **"continue conforme o proximosPassos.md"**. Sem mais nada 
 
 **Passo 1 — a entrega de empacotamento já está feita** (ver seção "Entrega de empacotamento — CONCLUÍDA"). Nada a repetir ali. Teste de container é sempre no Docker local; nunca no UNRAID.
 
-**Passo 2 — planejamento.** Próximos da fronteira: os protótipos [#14](https://github.com/edalcin/projMan/issues/14), [#15](https://github.com/edalcin/projMan/issues/15), [#16](https://github.com/edalcin/projMan/issues/16) (skill `prototype`). Reivindique com `gh issue edit <n> --add-assignee @me` **antes** de trabalhar. O usuário autorizou seguir **direto com a recomendação** em cada pergunta: decida, registre e mostre, sem parar para perguntar. Ao resolver: arquivo em `docs/decisoes/`, comentário na issue, `gh issue close`, e uma linha em *Decisions so far* no corpo da #1.
+**Passo 2 — planejamento.** Próximo da fronteira: o protótipo [#15](https://github.com/edalcin/projMan/issues/15) (filtro salvo, skill `prototype`); depois [#17](https://github.com/edalcin/projMan/issues/17) consolida a spec e fecha o mapa. Reivindique com `gh issue edit <n> --add-assignee @me` **antes** de trabalhar. O usuário autorizou seguir **direto com a recomendação** em cada pergunta: decida, registre e mostre, sem parar para perguntar. Ao resolver: arquivo em `docs/decisoes/`, comentário na issue, `gh issue close`, e uma linha em *Decisions so far* no corpo da #1.
 
 **Regras desta jornada** (valem em toda sessão):
 - Vários tickets por sessão, em ordem, se o usuário disser "siga". Cada ticket fecha completo (código + teste + doc + issue) antes do próximo. `research` pode ir em paralelo por subagente.
 - Perguntas ao usuário: **uma por vez**, sempre com recomendação. Desde 2026-09-22 o usuário autorizou assumir a recomendação sem perguntar; ele corrige depois se discordar.
 - Modo `ponytail` (full): a escada YAGNI vale para cada decisão; a opção que remove código ganha.
 - Responda em português, com jargão técnico em inglês, frases curtas.
-- Commit direto na `main`. Nunca criar branch. Nunca commitar segredo.
+- Commit direto na `main`. Única exceção: protótipo vai numa branch descartável `prototipo/<n>-<nome>` (pedido pelos tickets de prototype); nada dela entra na `main`. Nunca commitar segredo.
 - Ao encerrar, atualize este documento: estado, o que ficou pendente, e os fatos novos do ambiente.
 
 **Onde estão as coisas**: repositório `D:/git/projMan` (`origin` = `github.com/edalcin/projMan`, público, issues ativas, `gh` autenticado como `edalcin`). Tracker do wayfinder = issues deste repositório. Nenhum job em voo, nenhum container de teste rodando (container, volumes e imagem `projman:teste` removidos). A sessão de 2026-09-23 fechou com a `main` sincronizada com o `origin` no commit `c8d97a8`+docs e o último CI verde.
@@ -33,9 +33,9 @@ Gatilho do usuário: **"continue conforme o proximosPassos.md"**. Sem mais nada 
 
 **Sessão de 2026-09-23 (2)**: ticket #13 fechado — backup pelo plugin *Appdata Backup* (para o container, cópia segura), atualização por `latest`, e `migrar()` agora grava `projman.db.v<N>.bak` antes de migrar banco em uso (rollback = SHA anterior + renomear o `.bak`). README ganhou "Backup automático" e "Atualização e volta atrás". `npm test` roda 31 testes.
 
-**Sessão de 2026-09-23 (3)**: #14 em andamento. Protótipo com 3 variantes do shell na branch descartável `prototipo/14-shell` (link na issue). **Falta**: o usuário escolher a variante; então grave `docs/decisoes/14-shell.md`, feche a #14 e ponha a linha na #1. Nada do protótipo entra na `main`. Para ver: `git switch prototipo/14-shell`, `npm run dev` com `ADMIN_PASSWORD_HASH=scrypt:x` e `SESSION_SECRET` (≥32 chars), abrir `/prototipo/shell`.
+**Sessão de 2026-09-23 (3)**: #14 e #16 fechados. #14: variante A no desktop + criação por FAB/folha no celular (`docs/decisoes/14-shell.md`, branch `prototipo/14-shell`). #16: ponto médio confirmado, passo 1024, SortableJS com `forceFallback` e pressão longa no toque, servidor calcula a posição, sem virtualização (`docs/decisoes/16-kanban.md`, branch `prototipo/16-kanban`). Para ver um protótipo: `git switch <branch>`, `npm install`, `npm run dev` com `ADMIN_PASSWORD_HASH=scrypt:x` e `SESSION_SECRET` (≥32 chars), abrir `/prototipo/<nome>`. Volte à `main` com `npm ci --ignore-scripts` depois.
 
-**Amanhã**: feche a #14 com a escolha, depois #16 e #15.
+**Amanhã**: #15 (protótipo do filtro salvo), depois #17.
 
 ## Onde o projeto está
 
@@ -103,13 +103,13 @@ Vindas da sessão de charting (14 decisões de escopo) e dos 5 tickets de `resea
 | ~~#11 smart lists e filtro~~ | grilling | **fechado em 2026-09-22** — ver `docs/decisoes/11-smart-lists-filtro.md` |
 | ~~#12 feed iCal e export~~ | grilling | **fechado em 2026-09-23** — ver `docs/decisoes/12-ical-export.md` |
 | ~~#13 Docker/CI/UNRAID~~ | grilling | **fechado em 2026-09-23** — ver `docs/decisoes/13-backup-atualizacao.md` |
-| [#14 Protótipo do shell](https://github.com/edalcin/projMan/issues/14) | prototype | **livre** |
+| ~~#14 Protótipo do shell~~ | prototype | **fechado em 2026-09-23** — ver `docs/decisoes/14-shell.md` |
 | [#15 Protótipo do filtro salvo](https://github.com/edalcin/projMan/issues/15) | prototype | **livre** (destravado por #11) |
-| [#16 Protótipo do Kanban](https://github.com/edalcin/projMan/issues/16) | prototype | **livre** |
+| ~~#16 Protótipo do Kanban~~ | prototype | **fechado em 2026-09-23** — ver `docs/decisoes/16-kanban.md` |
 
 Bloqueados: [#17](https://github.com/edalcin/projMan/issues/17) consolida a spec e fecha o mapa (espera todos).
 
-**Caminho crítico**: #15 → #17. Restam #14, #15 e #16; todos livres.
+**Caminho crítico**: #15 → #17. Resta só o #15 antes do #17.
 
 **Regra nova de schema**: a `001` foi editada no lugar em 2026-09-22 porque ainda não havia banco em produção. **Daqui em diante, toda mudança de schema é uma migração nova** (`002_…sql`), nunca uma edição da `001`.
 
