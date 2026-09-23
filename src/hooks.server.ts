@@ -16,10 +16,12 @@ if (!building) {
 const PUBLICAS = ['/login', '/share/', '/ical/', '/api/saude'];
 
 // O CSP vem do kit.csp (vite.config.ts). HSTS fica no Cloudflare.
-// no-referrer: o hash do /share nunca vaza para um link externo.
+// same-origin: o hash do /share nunca vaza para um link externo. Não use
+// no-referrer: com ele o browser manda `Origin: null` no POST de formulário, e a
+// proteção de CSRF do SvelteKit recusa todo login (403 "Cross-site POST…").
 const HEADERS = {
 	'X-Content-Type-Options': 'nosniff',
-	'Referrer-Policy': 'no-referrer',
+	'Referrer-Policy': 'same-origin',
 	'X-Frame-Options': 'DENY',
 	'Permissions-Policy': 'camera=(), microphone=(), geolocation=()'
 };

@@ -21,7 +21,7 @@ Bases: [#3](https://github.com/edalcin/projMan/issues/3) (sessão) e [#4](https:
 | 12 | Hash inexistente | `404`, igual ao hash malformado: não confirma existência de nada |
 | 13 | Revogar link | **Apagar a linha.** Um link novo é um hash novo. Não há expiração |
 | 14 | Anexos | Servidos só por rota autenticada (`/api/…`, atrás do gate). O arquivo em `FILES_PATH` tem `stored_name` gerado pelo servidor, nunca vem do cliente, e **não há servidor estático** sobre a pasta |
-| 15 | Headers | Em **toda** resposta, inclusive 303/401/405: `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer` (o hash do `/share` nunca vaza), `X-Frame-Options: DENY`, `Permissions-Policy`. HSTS fica no Cloudflare |
+| 15 | Headers | Em **toda** resposta, inclusive 303/401/405: `X-Content-Type-Options: nosniff`, `Referrer-Policy: same-origin` (o hash do `/share` nunca vaza para fora), `X-Frame-Options: DENY`, `Permissions-Policy`. HSTS fica no Cloudflare. *Corrigido em 2026-09-23: era `no-referrer`, que faz o browser mandar `Origin: null` no POST de formulário; a proteção de CSRF do SvelteKit recusava todo login em produção.* |
 | 16 | CSP | `kit.csp` modo `auto` (nonce por request): `default-src 'self'`, `script-src 'self' + nonce`, `style-src 'self' 'unsafe-inline'`, `img-src 'self' data: blob:`, `object-src 'none'`, `frame-ancestors 'none'`, `form-action 'self'`, `base-uri 'self'`. O HTML do TipTap chega sanitizado (#4); `unsafe-inline` só cobre `style=` do Svelte |
 
 ## Invariante
