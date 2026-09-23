@@ -12,8 +12,8 @@ if (!building) {
 		throw new Error('SESSION_SECRET ausente ou com menos de 32 caracteres. Gere com: openssl rand -base64 48');
 }
 
-// Rotas que não exigem sessão. Tudo o mais exige.
-const PUBLICAS = ['/login', '/share/', '/api/saude'];
+// Rotas que não exigem sessão. Tudo o mais exige. /ical/ se protege pelo token.
+const PUBLICAS = ['/login', '/share/', '/ical/', '/api/saude'];
 
 // O CSP vem do kit.csp (vite.config.ts). HSTS fica no Cloudflare.
 // no-referrer: o hash do /share nunca vaza para um link externo.

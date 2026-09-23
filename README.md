@@ -45,6 +45,7 @@ Variáveis de ambiente (ver [`.env.example`](.env.example)):
 | `ADDRESS_HEADER` | `CF-Connecting-IP` | atrás do Cloudflare Tunnel |
 | `TZ` | `America/Sao_Paulo` | não |
 | `BODY_SIZE_LIMIT` | `26214400` | não |
+| `ICAL_TOKEN` | saída de `openssl rand -hex 20` (mín. 32 chars) | não — sem ela o feed iCal não existe |
 
 Sem `ADMIN_PASSWORD_HASH` ou `SESSION_SECRET` válidos o container **não sobe** — de propósito.
 Para derrubar todas as sessões abertas, troque `SESSION_SECRET` e reinicie.
@@ -54,3 +55,22 @@ SvelteKit responde 403 a todo POST atrás do túnel.
 
 Saúde do container: `GET /api/saude` — confirma que os dois volumes estão
 graváveis. É o que o `HEALTHCHECK` da imagem chama.
+
+## Feed de calendário
+
+Com `ICAL_TOKEN` definido, assine `https://projman.exemplo.com/ical/<ICAL_TOKEN>`
+no Google Calendar (Outras agendas → Por URL) ou em qualquer cliente iCal. O feed
+mostra toda tarefa aberta com prazo como evento; feita ou apagada some na próxima
+atualização do cliente. Para revogar o link, troque `ICAL_TOKEN` e reinicie.
+
+## Export e restauração
+
+`GET /api/export` (com sessão) baixa `projman-AAAA-MM-DD.tar.gz` com:
+
+- `projman.db` — snapshot consistente do banco (abre no DB Browser for SQLite);
+- `files/` — os anexos que o banco referencia.
+
+Não há import pela app. Para restaurar: pare o container, descompacte
+(`tar -xzf projman-….tar.gz`), copie `projman.db` para a pasta de `DB_PATH`
+(apague `projman.db-wal` e `projman.db-shm` se existirem) e o conteúdo de
+`files/` para a pasta de `FILES_PATH`. Suba o container.

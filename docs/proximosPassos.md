@@ -1,7 +1,7 @@
 # projMan — próximos passos
 
 > Documento de estado. Toda sessão nova começa por aqui.
-> Última atualização: 2026-09-22.
+> Última atualização: 2026-09-23.
 
 ## Como retomar (instruções para a sessão nova)
 
@@ -15,7 +15,7 @@ Gatilho do usuário: **"continue conforme o proximosPassos.md"**. Sem mais nada 
 
 **Passo 1 — a entrega de empacotamento já está feita** (ver seção "Entrega de empacotamento — CONCLUÍDA"). Nada a repetir ali. Teste de container é sempre no Docker local; nunca no UNRAID.
 
-**Passo 2 — planejamento.** Próximo da fronteira: [#12](https://github.com/edalcin/projMan/issues/12) (feed iCal e pacote de export). Reivindique com `gh issue edit 12 --add-assignee @me` **antes** de trabalhar. O usuário autorizou seguir **direto com a recomendação** em cada pergunta: decida, registre e mostre, sem parar para perguntar. Ao resolver: arquivo em `docs/decisoes/`, comentário na issue, `gh issue close`, e uma linha em *Decisions so far* no corpo da #1.
+**Passo 2 — planejamento.** Próximo da fronteira: [#13](https://github.com/edalcin/projMan/issues/13) (backup e política de atualização; o empacotamento já está feito, e o export do #12 já é o backup manual). Depois os protótipos #14, #15, #16. Reivindique com `gh issue edit <n> --add-assignee @me` **antes** de trabalhar. O usuário autorizou seguir **direto com a recomendação** em cada pergunta: decida, registre e mostre, sem parar para perguntar. Ao resolver: arquivo em `docs/decisoes/`, comentário na issue, `gh issue close`, e uma linha em *Decisions so far* no corpo da #1.
 
 **Regras desta jornada** (valem em toda sessão):
 - Vários tickets por sessão, em ordem, se o usuário disser "siga". Cada ticket fecha completo (código + teste + doc + issue) antes do próximo. `research` pode ir em paralelo por subagente.
@@ -29,9 +29,11 @@ Gatilho do usuário: **"continue conforme o proximosPassos.md"**. Sem mais nada 
 
 **Sessão de 2026-09-22 — o que foi feito**: entrega de empacotamento (Dockerfile, CI, template), depois os tickets #7, #8, #9, #10 e #11, fechados nesta ordem. Cada um tem o seu `docs/decisoes/NN-*.md`, comentário na issue e linha em *Decisions so far* na #1.
 
+**Sessão de 2026-09-23**: ticket #12 fechado — feed iCal (`/ical/<ICAL_TOKEN>`) e export `.tar.gz` (`/api/export`). Variável nova opcional `ICAL_TOKEN` no `.env.example`, README e template (template já copiado de novo para o servidor).
+
 ## Onde o projeto está
 
-**Fase: planejamento (wayfinding), com código de base já no ar.** O repositório tem o app mínimo SvelteKit, `Dockerfile`, CI, template do UNRAID, o schema v1 (`migrations/001_inicial.sql`), as regras de data (`src/lib/datas.ts`), a autenticação (hook, `/login`, `/logout`, `/share/<hash>`), as smart lists e o filtro salvo (`src/lib/server/filtro.ts`, `GET /api/tarefas`) e `docs/decisoes/`. `npm test` roda 27 testes. A única UI de domínio é a página pública do `/share`; o resto vem com os protótipos (#14, #16).
+**Fase: planejamento (wayfinding), com código de base já no ar.** O repositório tem o app mínimo SvelteKit, `Dockerfile`, CI, template do UNRAID, o schema v1 (`migrations/001_inicial.sql`), as regras de data (`src/lib/datas.ts`), a autenticação (hook, `/login`, `/logout`, `/share/<hash>`), as smart lists e o filtro salvo (`src/lib/server/filtro.ts`, `GET /api/tarefas`), o feed iCal e o export (`src/lib/server/ical.ts`, `exportar.ts`) e `docs/decisoes/`. `npm test` roda 30 testes. A única UI de domínio é a página pública do `/share`; o resto vem com os protótipos (#14, #16).
 
 O planejamento vive no tracker, não neste arquivo:
 
@@ -65,7 +67,7 @@ Vindas da sessão de charting (14 decisões de escopo) e dos 5 tickets de `resea
 | Lembretes | Nenhum canal ativo no v1. Web Push fica para depois |
 | Renderização | SvelteKit híbrido: `+page.server.ts` para leitura e para `/share/<hash>`, `+server.ts` para mutações interativas |
 | Recorrência | Data fixa, calculada a partir do **prazo anterior**, nunca da data de conclusão |
-| Persistência | `DB_PATH` (banco) e `FILES_PATH` (anexos), dois volumes. Varredura de órfãos no boot. Export `.zip` (dump JSON + arquivos) |
+| Persistência | `DB_PATH` (banco) e `FILES_PATH` (anexos), dois volumes. Varredura de órfãos no boot. Export `.tar.gz` (snapshot `.db` + arquivos, #12) |
 | Texto rico | HTML do TipTap **sanitizado no servidor na escrita** + coluna derivada `description_text` para FTS5 |
 | Ordenação | Posição por view: `task_positions (task_id, project_view_id, position REAL)` para List/Table; posição dentro da coluna em `task_buckets`. Ponto médio, renumeração abaixo de 0,01 |
 
@@ -93,7 +95,7 @@ Vindas da sessão de charting (14 decisões de escopo) e dos 5 tickets de `resea
 | ~~#9 schema~~ | design | **fechado em 2026-09-22** — ver `docs/decisoes/09-schema.md`; DDL em `migrations/001_inicial.sql` |
 | ~~#10 autenticação~~ | grilling | **fechado em 2026-09-22** — ver `docs/decisoes/10-autenticacao.md` |
 | ~~#11 smart lists e filtro~~ | grilling | **fechado em 2026-09-22** — ver `docs/decisoes/11-smart-lists-filtro.md` |
-| [#12 Feed iCal e pacote de export](https://github.com/edalcin/projMan/issues/12) | grilling | **livre** |
+| ~~#12 feed iCal e export~~ | grilling | **fechado em 2026-09-23** — ver `docs/decisoes/12-ical-export.md` |
 | [#13 Docker/CI/UNRAID](https://github.com/edalcin/projMan/issues/13) | grilling | **livre** — empacotamento feito; falta backup e política de atualização |
 | [#14 Protótipo do shell](https://github.com/edalcin/projMan/issues/14) | prototype | **livre** |
 | [#15 Protótipo do filtro salvo](https://github.com/edalcin/projMan/issues/15) | prototype | **livre** (destravado por #11) |
@@ -101,7 +103,7 @@ Vindas da sessão de charting (14 decisões de escopo) e dos 5 tickets de `resea
 
 Bloqueados: [#17](https://github.com/edalcin/projMan/issues/17) consolida a spec e fecha o mapa (espera todos).
 
-**Caminho crítico**: #15 → #17. Restam #12, #13, #14, #15 e #16; todos livres.
+**Caminho crítico**: #15 → #17. Restam #13, #14, #15 e #16; todos livres.
 
 **Regra nova de schema**: a `001` foi editada no lugar em 2026-09-22 porque ainda não havia banco em produção. **Daqui em diante, toda mudança de schema é uma migração nova** (`002_…sql`), nunca uma edição da `001`.
 
