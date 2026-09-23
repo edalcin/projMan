@@ -74,3 +74,32 @@ Não há import pela app. Para restaurar: pare o container, descompacte
 (`tar -xzf projman-….tar.gz`), copie `projman.db` para a pasta de `DB_PATH`
 (apague `projman.db-wal` e `projman.db-shm` se existirem) e o conteúdo de
 `files/` para a pasta de `FILES_PATH`. Suba o container.
+
+## Backup automático
+
+Use o plugin **Appdata Backup** (Community Applications). Ele **para o container**
+antes de copiar, e só assim a cópia de um SQLite em WAL é segura. Configure:
+
+- pasta de origem: `/mnt/cache/appdata/projman` (o `DB_PATH`);
+- em *Include extra files/folders*: a pasta de `FILES_PATH`;
+- agendamento semanal (ou diário), com retenção a seu gosto.
+
+Nunca copie `projman.db` com o container no ar por `cp`/`rsync`: a cópia pode
+sair corrompida. Com o container no ar, o caminho seguro é o `/api/export`.
+
+## Atualização e volta atrás
+
+O template usa a tag `latest`. Para atualizar: Docker → *Check for Updates* →
+*apply update*. As migrações rodam no boot. Antes de migrar, o app grava
+`projman.db.v<N>.bak` (a versão anterior) ao lado do banco.
+
+Para voltar atrás depois de uma migração:
+
+1. Pare o container.
+2. Em *Repository*, troque `latest` pelo SHA curto da versão anterior
+   (lista em `github.com/edalcin/projman/pkgs/container/projman`).
+3. Na pasta de `DB_PATH`, apague `projman.db-wal` e `projman.db-shm` e renomeie
+   `projman.db.v<N>.bak` para `projman.db`. Escrita feita depois da atualização se perde.
+4. Suba o container.
+
+Apague os `.bak` antigos à mão quando quiser.

@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import test from 'node:test';
 import Database from 'better-sqlite3';
 import { migrar } from './migrar.ts';
@@ -32,6 +34,24 @@ test('migrar é idempotente e leva o banco à última versão', () => {
 	const db = banco();
 	migrar(db, migracoes);
 	assert.equal(db.pragma('user_version', { simple: true }), Object.keys(migracoes).length);
+});
+
+test('migrar grava snapshot da versão anterior antes de migrar banco em uso', () => {
+	const pasta = mkdtempSync(join(tmpdir(), 'projman-migrar-'));
+	try {
+		const caminho = join(pasta, 'p.db');
+		const db = new Database(caminho);
+		migrar(db, migracoes);
+		const v = db.pragma('user_version', { simple: true }) as number;
+		assert.ok(!existsSync(`${caminho}.v0.bak`), 'banco novo não gera snapshot');
+		migrar(db, { ...migracoes, [`${v + 1}_x.sql`]: 'CREATE TABLE x (a)' });
+		db.close();
+		const bak = new Database(`${caminho}.v${v}.bak`, { readonly: true });
+		assert.equal(bak.pragma('user_version', { simple: true }), v);
+		bak.close();
+	} finally {
+		rmSync(pasta, { recursive: true, force: true });
+	}
 });
 
 test('projeto novo nasce com três views e as colunas do Kanban ligadas', () => {

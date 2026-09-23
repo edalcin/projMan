@@ -15,7 +15,7 @@ Gatilho do usuário: **"continue conforme o proximosPassos.md"**. Sem mais nada 
 
 **Passo 1 — a entrega de empacotamento já está feita** (ver seção "Entrega de empacotamento — CONCLUÍDA"). Nada a repetir ali. Teste de container é sempre no Docker local; nunca no UNRAID.
 
-**Passo 2 — planejamento.** Próximo da fronteira: [#13](https://github.com/edalcin/projMan/issues/13) (backup e política de atualização; o empacotamento já está feito, e o export do #12 já é o backup manual). Depois os protótipos #14, #15, #16. Reivindique com `gh issue edit <n> --add-assignee @me` **antes** de trabalhar. O usuário autorizou seguir **direto com a recomendação** em cada pergunta: decida, registre e mostre, sem parar para perguntar. Ao resolver: arquivo em `docs/decisoes/`, comentário na issue, `gh issue close`, e uma linha em *Decisions so far* no corpo da #1.
+**Passo 2 — planejamento.** Próximos da fronteira: os protótipos [#14](https://github.com/edalcin/projMan/issues/14), [#15](https://github.com/edalcin/projMan/issues/15), [#16](https://github.com/edalcin/projMan/issues/16) (skill `prototype`). Reivindique com `gh issue edit <n> --add-assignee @me` **antes** de trabalhar. O usuário autorizou seguir **direto com a recomendação** em cada pergunta: decida, registre e mostre, sem parar para perguntar. Ao resolver: arquivo em `docs/decisoes/`, comentário na issue, `gh issue close`, e uma linha em *Decisions so far* no corpo da #1.
 
 **Regras desta jornada** (valem em toda sessão):
 - Vários tickets por sessão, em ordem, se o usuário disser "siga". Cada ticket fecha completo (código + teste + doc + issue) antes do próximo. `research` pode ir em paralelo por subagente.
@@ -31,7 +31,9 @@ Gatilho do usuário: **"continue conforme o proximosPassos.md"**. Sem mais nada 
 
 **Sessão de 2026-09-23**: ticket #12 fechado — feed iCal (`/ical/<ICAL_TOKEN>`) e export `.tar.gz` (`/api/export`). Variável nova opcional `ICAL_TOKEN` no `.env.example`, README e template (template já copiado de novo para o servidor). A decisão de charting "export `.zip` com dump JSON" foi trocada por `.tar.gz` com snapshot `.db`; a #1 já reflete isso. Nada ficou pela metade.
 
-**Amanhã**: comece pelo #13. O que resta dele: (a) backup automático — recomendação provável: plugin *Appdata Backup* do UNRAID sobre os dois volumes, ou export agendado; (b) política de atualização da imagem (`latest` vs SHA fixo, migração no boot já existe). O export do #12 já é o backup manual.
+**Sessão de 2026-09-23 (2)**: ticket #13 fechado — backup pelo plugin *Appdata Backup* (para o container, cópia segura), atualização por `latest`, e `migrar()` agora grava `projman.db.v<N>.bak` antes de migrar banco em uso (rollback = SHA anterior + renomear o `.bak`). README ganhou "Backup automático" e "Atualização e volta atrás". `npm test` roda 31 testes.
+
+**Amanhã**: comece pelo #14 (shell), depois #16 e #15.
 
 ## Onde o projeto está
 
@@ -98,14 +100,14 @@ Vindas da sessão de charting (14 decisões de escopo) e dos 5 tickets de `resea
 | ~~#10 autenticação~~ | grilling | **fechado em 2026-09-22** — ver `docs/decisoes/10-autenticacao.md` |
 | ~~#11 smart lists e filtro~~ | grilling | **fechado em 2026-09-22** — ver `docs/decisoes/11-smart-lists-filtro.md` |
 | ~~#12 feed iCal e export~~ | grilling | **fechado em 2026-09-23** — ver `docs/decisoes/12-ical-export.md` |
-| [#13 Docker/CI/UNRAID](https://github.com/edalcin/projMan/issues/13) | grilling | **livre** — empacotamento feito; falta backup e política de atualização |
+| ~~#13 Docker/CI/UNRAID~~ | grilling | **fechado em 2026-09-23** — ver `docs/decisoes/13-backup-atualizacao.md` |
 | [#14 Protótipo do shell](https://github.com/edalcin/projMan/issues/14) | prototype | **livre** |
 | [#15 Protótipo do filtro salvo](https://github.com/edalcin/projMan/issues/15) | prototype | **livre** (destravado por #11) |
 | [#16 Protótipo do Kanban](https://github.com/edalcin/projMan/issues/16) | prototype | **livre** |
 
 Bloqueados: [#17](https://github.com/edalcin/projMan/issues/17) consolida a spec e fecha o mapa (espera todos).
 
-**Caminho crítico**: #15 → #17. Restam #13, #14, #15 e #16; todos livres.
+**Caminho crítico**: #15 → #17. Restam #14, #15 e #16; todos livres.
 
 **Regra nova de schema**: a `001` foi editada no lugar em 2026-09-22 porque ainda não havia banco em produção. **Daqui em diante, toda mudança de schema é uma migração nova** (`002_…sql`), nunca uma edição da `001`.
 
@@ -120,7 +122,7 @@ Bloqueados: [#17](https://github.com/edalcin/projMan/issues/17) consolida a spec
 
 **Regra nova do usuário**: nunca subir container no UNRAID para teste. O UNRAID é só produção e recebe apenas o template XML; todo teste de container é no Docker local (Windows). Já gravada no `AGENTS.md` global.
 
-Falta do ticket [#13](https://github.com/edalcin/projMan/issues/13): backup e política de atualização. As migrações já existem (`PRAGMA user_version`, ver #9).
+Ticket #13 fechado em 2026-09-23 (backup e atualização, ver `docs/decisoes/13-backup-atualizacao.md`).
 
 **Armadilha de build**: `better-sqlite3` v13 traz os binários no pacote, mas o npm roda o `node-gyp` implícito por causa do `binding.gyp`. No Alpine isso falha. O `Dockerfile` e o CI usam `npm ci --ignore-scripts`. Não remova.
 
