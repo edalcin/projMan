@@ -48,7 +48,7 @@ Gatilho do usuário: **"continue conforme o proximosPassos.md"**. Então:
 - Commit direto na `main`. Nunca criar branch (a exceção dos protótipos acabou). Nunca commitar segredo.
 - Toda mudança de schema é uma migração nova (`002_…sql`); nunca edite a `001`.
 - Teste de container só no Docker local; o UNRAID é só produção.
-- Template do UNRAID (app Docker): `deploy/unraid/my-projMan.xml` é a fonte; sem segredo (campos sensíveis vazios, `Mask="true"`). Mudou variável, porta ou volume → edite o XML, commit, e copie para o servidor: `scp -i C:/Users/EDalcin/.ssh/unraid_ed25519 deploy/unraid/my-projMan.xml root@192.168.1.10:/boot/config/plugins/dockerMan/templates-user/`. Ícone: `static/icon-512.png`.
+- Template do UNRAID: `deploy/unraid/my-projMan.xml` no repositório é só o modelo, sem segredo (campos sensíveis vazios, `Mask="true"`). **NUNCA copie esse arquivo por cima de `/boot/config/plugins/dockerMan/templates-user/my-projMan.xml` no servidor**: depois que o container existe, esse arquivo guarda os valores que o usuário digitou (senha, segredo, ORIGIN, caminhos). Em 2026-09-23 uma cópia apagou esses valores e o container voltou com `ORIGIN=''`. Mudou variável, porta ou volume → edite o XML do repositório, commit, e **avise o usuário** para ajustar pela UI do UNRAID (Docker → Edit). Atualizar a imagem = *Check for Updates* / *force update* na UI, feito pelo usuário. Ícone: `static/icon-512.png`.
 
 ## Backlog de build (em ordem executável)
 
