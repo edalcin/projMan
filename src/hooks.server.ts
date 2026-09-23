@@ -13,7 +13,8 @@ if (!building) {
 }
 
 // Rotas que não exigem sessão. Tudo o mais exige. /ical/ se protege pelo token.
-const PUBLICAS = ['/login', '/share/', '/ical/', '/api/saude'];
+// PROTÓTIPO #15: /prototipo/ público só na branch prototipo/15-filtro.
+const PUBLICAS = ['/login', '/share/', '/ical/', '/api/saude', '/prototipo/'];
 
 // O CSP vem do kit.csp (vite.config.ts). HSTS fica no Cloudflare.
 // no-referrer: o hash do /share nunca vaza para um link externo.
