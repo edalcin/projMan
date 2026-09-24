@@ -1,15 +1,15 @@
 # projMan — próximos passos
 
 > Documento de estado. Toda sessão nova começa por aqui.
-> Última atualização: 2026-09-24 (onda 2 integrada).
+> Última atualização: 2026-09-24 (fim de sessão, encerrada pelo usuário para esperar os créditos). Último commit: `947b8a3` (onda 2); working tree limpo, `main` sincronizada.
 
 ## Estado atual
 
 **Fase: build do v1.** Planejamento fechado (mapa [#1](https://github.com/edalcin/projMan/issues/1)). **Itens 1 a 10 prontos** (ondas 1 e 2, 2026-09-24). Falta só o **item 11** (fechamento do v1).
 
-**Produção**: https://projman.dalc.in (UNRAID), com o projeto "Entre Ciências" do Vikunja. A imagem nova só chega lá quando o usuário der *force update*.
+**Produção**: https://projman.dalc.in (UNRAID), com o projeto "Entre Ciências" do Vikunja. A imagem nova só chega lá quando o usuário der *force update*. **Em 2026-09-24 o usuário foi avisado para dar *force update* (ondas 1 e 2); confirme com ele se já fez antes de testar em produção.**
 
-O que já existe e funciona (`npm test`: 78 testes; `npm run check`: 0 erros, 4 warnings `state_referenced_locally` benignos):
+O que já existe e funciona (`npm test`: 78 testes; `npm run check`: 0 erros, 4 warnings `state_referenced_locally`, ver "Plano da próxima sessão"):
 
 - `Dockerfile`, CI (build → Trivy → push para `ghcr.io/edalcin/projman`), template do UNRAID em `deploy/unraid/my-projMan.xml`. `README.md` é para o usuário; instalação e operação em `docs/instalacao.md`; desenvolvimento em `docs/desenvolvimento.md`.
 - Schema v1 (`migrations/001_inicial.sql`) e as migrações no boot, com snapshot `.bak` antes de migrar (`src/lib/server/migrar.ts`).
@@ -56,11 +56,20 @@ Depois de cada onda: rode `npm test`, `npm run check`, `npm run build`; faça a 
 
 ## Plano da próxima sessão
 
-**Item 11 — fechamento do v1** (Main, sem subagentes):
+**Item 11 — fechamento do v1** (Main, sem subagentes). Gatilho: "continue conforme o proximosPassos.md".
 
-1. Smoke da imagem no Docker local com todos os fluxos no browser (login real, criar/editar tarefa, descrição, comentário, anexo, List/Kanban/Table, filtro salvo, link público, iCal, export, PWA offline).
-2. Rever `README.md`, `docs/instalacao.md` e `deploy/unraid/my-projMan.xml` (sem copiar o XML para o servidor).
-3. Tag de release `v1.0.0` e avisar o usuário para dar *force update*.
+1. Smoke da imagem no Docker local com todos os fluxos no browser (login real com senha, criar/editar tarefa, descrição, comentário, anexo, List/Kanban/Table, filtro salvo, link público, iCal, export, PWA offline).
+2. Cobrir o que ficou sem prova nas ondas 1 e 2:
+   - tela de 390 px das ondas 1 e 2 (painel, comentários, anexos, Kanban); a emulação no relay deu 260 px, use o Chrome headless abaixo;
+   - arrastar por toque (`delay: 250`) na List e no Kanban;
+   - `/filtros/<id>` → `/filtros/<outro id>` sem recarregar: o `ConstrutorFiltro` pode mostrar valores velhos (warning `state_referenced_locally`); se confirmar, `{#key data.id}` na página.
+3. Recriar `.dev-wipe-me.db` com o seed novo (agora traz o HTML da descrição) e conferir a descrição de uma tarefa real no painel.
+4. Rever `README.md`, `docs/instalacao.md` (seção de anexos/comentários, se faltar) e `deploy/unraid/my-projMan.xml` (sem copiar o XML para o servidor).
+5. Tag de release `v1.0.0` (`git tag v1.0.0 && git push --tags`) e avisar o usuário para dar *force update*.
+
+Depois do v1: perguntar ao usuário qual item de "Depois do v1" segue, ou se quer o seed com comentários e anexos do Vikunja.
+
+Fatos conhecidos, não são bugs: a whitelist remove `<b>`/`<i>` (o editor grava `<strong>`/`<em>`); `npm run check` tem 4 warnings `state_referenced_locally` (3 benignos, sincronizados por `$effect`; o 4º é o do item 2 acima).
 
 Browser de verificação: o relay (Chrome do usuário) falha com digitação no TipTap e fica "not visible". Use Chrome headless próprio: `browser.open({ app: { path: 'C:/Program Files/Google/Chrome/Application/chrome.exe', args: ['--headless=new', '--user-data-dir=<temp>'] } })`, cookie com `page.setCookie` dentro de `tab.run`, e `tab.emulate({ viewport })` para a largura.
 
@@ -99,7 +108,7 @@ O banco de dev (`.dev-wipe-me.db`, ignorado pelo git) usa o projeto **"Entre Ci�
 python scripts/seed-vikunja.py "Entre Ciências" .dev-wipe-me.db --substituir
 ```
 
-`VIKUNJA_URL` e `VIKUNJA_TOKEN` estão no **`.env` local** (ignorado pelo git; o `.env.example` só tem placeholders). Nunca commite o `.env`. O script só lê a API (GET) e cria o banco do zero; um banco que já existe só é trocado com `--substituir`. Ficam de fora comentários, anexos e o HTML da descrição (só o texto vai para `description_text`); estenda quando os itens 4 e 8 estiverem prontos. Sem `User-Agent` o Cloudflare do Vikunja responde 403. No Windows, pare o dev server antes: arquivo aberto não pode ser apagado.
+`VIKUNJA_URL` e `VIKUNJA_TOKEN` estão no **`.env` local** (ignorado pelo git; o `.env.example` só tem placeholders). Nunca commite o `.env`. O script só lê a API (GET) e cria o banco do zero; um banco que já existe só é trocado com `--substituir`. A descrição vem em HTML, sanitizada por `scripts/sanitizar-html.ts` (mesma whitelist do app, precisa de `node`); comentários e anexos ficam de fora. Sem `User-Agent` o Cloudflare do Vikunja responde 403. No Windows, pare o dev server antes: arquivo aberto não pode ser apagado.
 
 **Carga na produção** (pedido do usuário; faça só quando ele pedir): gere `projman.db` nesta máquina com o script; no UNRAID pare o container, copie o arquivo para `/mnt/cache/appdata/projman/projman.db` (apague `projman.db-wal`/`-shm` antigos), acerte o dono (`chown 99:100`) e suba o container. O banco antigo da produção é substituído: faça antes um export (`/api/export`) ou deixe o Appdata Backup rodar.
 
@@ -112,8 +121,10 @@ python scripts/seed-vikunja.py "Entre Ciências" .dev-wipe-me.db --substituir
 - **Módulo de servidor com efeito no import** precisa do guarda `building` de `$app/environment`.
 - **Python no Windows**: grave seed com `encoding='utf-8'`; `subprocess(shell=True)` usa `cmd.exe`.
 - **Export**: `VACUUM INTO` grava em `tmpdir()`; `/tmp` do container deve ficar vazio depois do download.
-- **Browser de verificação (relay)**: é uma aba só, compartilhada por todos os subagentes: em paralelo eles se atropelam; o Main verifica no fim. Screenshot sai em `~/Desktop`: mova para `~/Desktop/OMPtemp`. Arrastar com SortableJS funciona com `page.mouse` (down, moves em passos, up) mirando o `ul[data-bucket]`; coluna fora da tela não recebe o drop (role o contêiner antes).
-- **Browser (emulação)**: com `emulate({ device })`, `tab.click` por coordenada pode acertar o elemento errado. Use `evaluate("el.click()")` ou teste sem emulação.
+- **Browser de verificação**: o padrão cai no relay (Chrome do usuário): uma aba só, compartilhada pelos subagentes (em paralelo se atropelam), fica "not visible" e não aceita digitação no TipTap. Use Chrome headless próprio (ver "Plano da próxima sessão"). Arrastar com SortableJS funciona com `page.mouse` (down, moves em passos, up) mirando o `ul[data-bucket]`; coluna fora da tela não recebe o drop (role o contêiner antes). Com viewport < 768 px a sidebar vira drawer: clique por coordenada no canto abre o drawer.
+- **Screenshots**: o browser grava em `~/Desktop`; mova sempre para `C:\Users\EDalcin\Desktop\OMPtemp` (regra global do usuário). Nunca no repositório.
+- **Svelte 5 + TipTap**: criar o `Editor` dentro de `$effect` sem `untrack` gera laço (`effect_update_depth_exceeded`) e apaga o texto. Veja `EditorRico.svelte`.
+- **Subagentes**: instale dependências e componentes shadcn **antes** de disparar (`shadcn-svelte add` pede confirmação mesmo com `-y`; use `-y -o` e restaure `button`/`separator` com `git checkout`).
 - **Vite no Windows**: `localhost` resolve para `::1`; a checagem de porta do `hub` espera `127.0.0.1`. Suba com `--host 127.0.0.1`.
 
 ## Fatos do ambiente
