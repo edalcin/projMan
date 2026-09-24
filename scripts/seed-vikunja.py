@@ -8,15 +8,16 @@ de dev e para a carga inicial da produção. Cria o banco do zero:
 
 VIKUNJA_URL e VIKUNJA_TOKEN vêm do ambiente ou do `.env` local (ignorado pelo
 git; nunca commitar). Um banco que já existe só é trocado com `--substituir`.
-Fica de fora: comentários e anexos (item 8) e o HTML da descrição (só o texto
-vai para description_text até a sanitização do item 4).
+Fica de fora: comentários e anexos (item 8). A descrição chega como HTML e é
+sanitizada em lote por `node scripts/sanitizar-html.ts`, que reaproveita
+`src/lib/server/html.ts` (mesma whitelist do app, #4/ADR 0002) — a whitelist
+não é duplicada aqui em Python; qualquer mudança em html.ts já vale pro seed.
 """
 
-import html
 import json
 import os
-import re
 import sqlite3
+import subprocess
 import sys
 import urllib.request
 from pathlib import Path
@@ -59,8 +60,15 @@ def instante(v):
     return None if not v or v == NULO else v.replace('Z', '.000Z') if '.' not in v else v
 
 
-def texto(h):
-    return html.unescape(re.sub(r'<[^>]+>', ' ', re.sub(r'<!--.*?-->', '', h or ''))).split()
+def sanitizar_lote(htmls):
+    """Sanitiza vários HTMLs de uma vez via scripts/sanitizar-html.ts (Node)."""
+    raiz = Path(__file__).resolve().parent.parent
+    r = subprocess.run(
+        ['node', str(raiz / 'scripts' / 'sanitizar-html.ts')],
+        input=json.dumps(htmls).encode('utf-8'),
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=raiz, check=True,
+    )
+    return json.loads(r.stdout.decode('utf-8'))
 
 
 def main(nome, destino, substituir):
@@ -100,6 +108,9 @@ def main(nome, destino, substituir):
                 cor = (l.get('hex_color') or '').lower().lstrip('#') or None
                 labels[l['title']] = db.execute('INSERT INTO labels (title, hex_color) VALUES (?, ?)', (l['title'], cor)).lastrowid
 
+    # Sanitiza todas as descrições numa chamada só (mesma whitelist do app, #4).
+    descricoes = dict(zip((t['id'] for t in tarefas), sanitizar_lote([t.get('description') or '' for t in tarefas])))
+
     # Mães antes das filhas: o schema só aceita subtarefa de uma tarefa de 1º nível.
     mae = {s['id']: t['id'] for t in tarefas for s in (t.get('related_tasks') or {}).get('subtask') or []}
     ids = {}
@@ -108,9 +119,9 @@ def main(nome, destino, substituir):
         pai = ids.get(mae.get(t['id']))
         try:
             novo = db.execute(
-                'INSERT INTO tasks (project_id, parent_task_id, title, description_text, done, done_at, due_date,'
-                ' due_all_day, priority, created_at) VALUES (?,?,?,?,?,?,?,?,?,?)',
-                (pid, pai, t['title'], ' '.join(texto(t['description'])), int(t['done']),
+                'INSERT INTO tasks (project_id, parent_task_id, title, description, description_text, done, done_at,'
+                ' due_date, due_all_day, priority, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
+                (pid, pai, t['title'], descricoes[t['id']]['html'], descricoes[t['id']]['texto'], int(t['done']),
                  instante(t['done_at']) if t['done'] else None, due,
                  1 if due and due[11:16] in ('12:00', '00:00') else 0,  # Vikunja não marca "dia inteiro"
                  min(max(t['priority'], 0), 5), instante(t['created'])),

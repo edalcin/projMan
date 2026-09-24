@@ -1,6 +1,7 @@
 import { building } from '$app/environment';
 import { env } from '$env/dynamic/private';
 import Database from 'better-sqlite3';
+import { varrerOrfaos } from './anexos';
 import { migrar } from './migrar';
 
 function abrir() {
@@ -19,3 +20,6 @@ function abrir() {
 // O build do SvelteKit importa os módulos de servidor para analisá-los; nessa
 // fase não há banco nem DB_PATH. Nenhuma rota roda durante o build.
 export const db = building ? (undefined as unknown as Database.Database) : abrir();
+
+// Varredura de órfãos (#12, ADR 0005): não bloqueia o boot, roda em paralelo.
+if (!building) void varrerOrfaos(db, env.FILES_PATH ?? '/files');

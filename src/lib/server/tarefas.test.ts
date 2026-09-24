@@ -89,6 +89,19 @@ test('atualizarTarefa: título, prazo e prioridade', () => {
 	assert.equal(atualizarTarefa(db, 999, { priority: 1 }, { tz: TZ }), false);
 });
 
+test('atualizarTarefa: description sanitiza, gera description_text e respeita o limite', () => {
+	const db = banco();
+	const id = criarTarefa(db, { project_id: 1, title: 'x' });
+	assert.ok(
+		atualizarTarefa(db, id, { description: '<p><strong>Oi</strong></p><script>alert(1)</script><ul><li>a</li></ul>' }, { tz: TZ })
+	);
+	const t = lerTarefa(db, id)!;
+	assert.equal(t.description, '<p><strong>Oi</strong></p><ul><li>a</li></ul>');
+	assert.equal(db.prepare('SELECT description_text FROM tasks WHERE id = ?').pluck().get(id), 'Oi a');
+	assert.equal(db.prepare("SELECT rowid FROM tasks_fts WHERE tasks_fts MATCH 'Oi'").pluck().get(), id);
+	assert.throws(() => atualizarTarefa(db, id, { description: 'x'.repeat(100_001) }, { tz: TZ }), Invalido);
+});
+
 test('atualizarTarefa: troca de labels substitui o conjunto inteiro', () => {
 	const db = banco();
 	db.prepare("INSERT INTO labels (id, title) VALUES (1, 'a'), (2, 'b')").run();

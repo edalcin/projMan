@@ -1,6 +1,10 @@
 import Database from 'better-sqlite3';
 import { deLocal, proximoPrazo, type RepeatUnit } from '../datas.ts';
+import { paraTexto, sanitizar } from './html.ts';
 import { PASSO } from './posicao.ts';
+
+/** Tamanho máximo aceito para `description` bruta (antes de sanitizar), em bytes UTF-8 (400). */
+const LIMITE_DESCRICAO = 100_000;
 
 /** Entrada inválida vinda do cliente (400). */
 export class Invalido extends Error {}
@@ -190,6 +194,7 @@ export function lerTarefa(db: Database.Database, id: number): TarefaDetalhe | nu
 
 export type CamposTarefa = {
 	title?: string;
+	description?: string;
 	due_date?: string | null;
 	due_all_day?: boolean;
 	priority?: number;
@@ -217,6 +222,14 @@ export function atualizarTarefa(db: Database.Database, id: number, campos: Campo
 		if (campos.title !== undefined) {
 			sets.push('title = @title');
 			params.title = validarTitulo(campos.title);
+		}
+		if (campos.description !== undefined) {
+			if (typeof campos.description !== 'string') throw new Invalido('description precisa ser texto.');
+			if (Buffer.byteLength(campos.description, 'utf8') > LIMITE_DESCRICAO) throw new Invalido('description passou do limite de 100 kB.');
+			const description = sanitizar(campos.description);
+			sets.push('description = @description', 'description_text = @description_text');
+			params.description = description;
+			params.description_text = paraTexto(description);
 		}
 		if ('due_date' in campos) {
 			const n = normalizarPrazo(campos.due_date, campos.due_all_day, tz);

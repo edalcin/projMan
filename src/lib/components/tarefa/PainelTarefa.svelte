@@ -10,6 +10,8 @@
 	import { partesLocais, type RepeatUnit } from '$lib/datas';
 	import type { TarefaDetalhe } from '$lib/server/tarefas';
 	import CheckFeita from './CheckFeita.svelte';
+	import EditorRico from './EditorRico.svelte';
+	import ComentariosAnexos from './ComentariosAnexos.svelte';
 
 	const PRIORIDADES = ['Sem prioridade', 'Baixa', 'Média', 'Alta', 'Urgente', 'Agora'];
 	const UNIDADES: { valor: RepeatUnit; nome: string }[] = [
@@ -321,7 +323,9 @@
 
 				<div>
 					<Label class="mb-1 block text-xs text-muted-foreground">Descrição</Label>
-					<div class="min-h-16 rounded-md border bg-muted/30 p-2 text-sm whitespace-pre-wrap">{t.description || 'Sem descrição.'}</div>
+					{#key t.id}
+						<EditorRico valor={t.description} placeholder="Sem descrição." onSalvar={(html) => salvar({ description: html })} />
+					{/key}
 				</div>
 
 				{#if !t.parent_task_id}
@@ -343,6 +347,8 @@
 						</form>
 					</div>
 				{/if}
+
+				{#key t.id}<ComentariosAnexos tarefaId={t.id} />{/key}
 			</div>
 		{/if}
 	</aside>

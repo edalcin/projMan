@@ -1,15 +1,15 @@
 # projMan — próximos passos
 
 > Documento de estado. Toda sessão nova começa por aqui.
-> Última atualização: 2026-09-24 (onda 1 integrada).
+> Última atualização: 2026-09-24 (onda 2 integrada).
 
 ## Estado atual
 
-**Fase: build do v1.** Planejamento fechado (mapa [#1](https://github.com/edalcin/projMan/issues/1)). **Onda 1 pronta** (2026-09-24): itens 1, 2, 3, 5, 6, 7, 9 e 10 do backlog. Faltam a **onda 2** (itens 4 e 8) e o item 11.
+**Fase: build do v1.** Planejamento fechado (mapa [#1](https://github.com/edalcin/projMan/issues/1)). **Itens 1 a 10 prontos** (ondas 1 e 2, 2026-09-24). Falta só o **item 11** (fechamento do v1).
 
-**Produção**: https://projman.dalc.in (UNRAID), com o projeto "Entre Ciências" do Vikunja. A imagem da onda 1 só chega lá quando o usuário der *force update*.
+**Produção**: https://projman.dalc.in (UNRAID), com o projeto "Entre Ciências" do Vikunja. A imagem nova só chega lá quando o usuário der *force update*.
 
-O que já existe e funciona (`npm test`: 59 testes; `npm run check`: 0 erros, 4 warnings `state_referenced_locally` benignos):
+O que já existe e funciona (`npm test`: 78 testes; `npm run check`: 0 erros, 4 warnings `state_referenced_locally` benignos):
 
 - `Dockerfile`, CI (build → Trivy → push para `ghcr.io/edalcin/projman`), template do UNRAID em `deploy/unraid/my-projMan.xml`. `README.md` é para o usuário; instalação e operação em `docs/instalacao.md`; desenvolvimento em `docs/desenvolvimento.md`.
 - Schema v1 (`migrations/001_inicial.sql`) e as migrações no boot, com snapshot `.bak` antes de migrar (`src/lib/server/migrar.ts`).
@@ -17,14 +17,15 @@ O que já existe e funciona (`npm test`: 59 testes; `npm run check`: 0 erros, 4 
 - Autenticação: hook, `/login`, `/logout`, sessão HMAC, rate limit. `Referrer-Policy: same-origin`.
 - Shell da UI, smart lists e `GET /api/tarefas?lista=|filtro=|projeto=` (`src/lib/server/filtro.ts`).
 - Projetos e labels (`/projetos`), com **link público** por projeto (criar, copiar, revogar).
-- **Tarefa**: `src/lib/server/tarefas.ts` (`criarTarefa`, `marcarFeita`, `lerTarefa`, `atualizarTarefa`, `apagarTarefa`); API `POST /api/tarefas`, `GET|PATCH|DELETE /api/tarefas/<id>`, `POST /api/tarefas/<id>/feita`, `GET /api/labels`. Painel `src/lib/components/tarefa/PainelTarefa.svelte` (abre com `?tarefa=<id>` em toda página do `(app)`), `CheckFeita.svelte`, `linkTarefa.ts`, `FabNovaTarefa.svelte`. Criação rápida no topo da lista e FAB no celular. Descrição só leitura (texto).
+- **Tarefa**: `src/lib/server/tarefas.ts` (`criarTarefa`, `marcarFeita`, `lerTarefa`, `atualizarTarefa`, `apagarTarefa`); API `POST /api/tarefas`, `GET|PATCH|DELETE /api/tarefas/<id>`, `POST /api/tarefas/<id>/feita`, `GET /api/labels`. Painel `src/lib/components/tarefa/PainelTarefa.svelte` (abre com `?tarefa=<id>` em toda página do `(app)`), `CheckFeita.svelte`, `linkTarefa.ts`, `FabNovaTarefa.svelte`. Criação rápida no topo da lista e FAB no celular. Descrição rica com `EditorRico.svelte` (TipTap), sanitizada na escrita por `src/lib/server/html.ts` (`sanitizar`, `paraTexto` → `description_text`).
 - **Views** (`src/lib/server/views.ts`): `/projeto/<id>` (List, arrastar), `/projeto/<id>/kanban` (arrastar entre buckets; Feito ↔ `marcarFeita`), `/projeto/<id>/tabela` (`?ordem=`). Movimento em `POST /api/posicao/view` e `/api/posicao/kanban`. Na List a Subtarefa aparece solta, com o título da mãe ao lado (escondido no celular). A sidebar aponta para `/projeto/<id>`.
 - **Filtros salvos** (`src/lib/server/filtros-salvos.ts`): `/filtros`, `/filtros/novo`, `/filtros/<id>` com `ConstrutorFiltro.svelte`; link na sidebar.
+- **Comentários e anexos** (`src/lib/server/comentarios.ts`, `anexos.ts`): `ComentariosAnexos.svelte` no painel; rotas `/api/tarefas/<id>/comentarios`, `/api/tarefas/<id>/anexos` (≤25 MB, `stored_name` UUID em `FILES_PATH`), `/api/anexos/<id>` (download/apagar). Varredura de órfãos no boot (`db.ts`) só apaga nomes UUID na raiz de `FILES_PATH`.
 - **PWA**: `static/manifest.webmanifest`, `src/service-worker.ts`, reload no `controllerchange` em `src/app.html`.
 - Página pública `/share/<hash>`, feed iCal `/ical/<token>`, export `/api/export`, saúde `/api/saude`.
 - `scripts/seed-vikunja.py` (dados reais do Vikunja; token no `.env` local).
 
-Ainda não existe: descrição rica (TipTap), comentários, anexos.
+Ainda não existe: nada do backlog v1 além do item 11. O seed traz a descrição em HTML (via `scripts/sanitizar-html.ts`, mesma whitelist), mas não comentários nem anexos (Vikunja: `GET /tasks/{id}/comments`, `GET /tasks/{id}/attachments`).
 
 ## Onde está a spec
 
@@ -55,14 +56,13 @@ Depois de cada onda: rode `npm test`, `npm run check`, `npm run build`; faça a 
 
 ## Plano da próxima sessão
 
-**Onda 2** (o painel já existe). Dois agentes em paralelo, mesmo método da onda 1: cada um dono só dos seus arquivos, sem rodar `npm test`/`check`/`build` do projeto inteiro, sem commit; o Main instala as dependências **antes** de disparar (`npm i @tiptap/core @tiptap/starter-kit @tiptap/extension-link sanitize-html && npm i -D @types/sanitize-html --ignore-scripts`, confirme os pacotes no #4), recopia `.dev-wipe-me.db` para `.dev-agente{1,2}.db` e integra no fim. Screenshots de verificação vão para `C:\Users\EDalcin\Desktop\OMPtemp`.
+**Item 11 — fechamento do v1** (Main, sem subagentes):
 
-- **Descrição** (5181 / `.dev-agente1.db`), item 4: `src/lib/server/html.ts` (sanitização com a whitelist do #4 + `description_text`) + teste; editor `src/lib/components/tarefa/EditorRico.svelte` (TipTap) usado no `PainelTarefa.svelte`; `PATCH /api/tarefas/<id>` aceita `description`. Estender `scripts/seed-vikunja.py` para trazer o HTML sanitizado.
-- **Comentários e anexos** (5182 / `.dev-agente2.db`), item 8: `src/lib/server/comentarios.ts`, `src/lib/server/anexos.ts` + testes; rotas `src/routes/api/tarefas/[id]/comentarios/**`, `src/routes/api/tarefas/[id]/anexos/**`, download com `Content-Disposition`; anexo ≤25 MB em `FILES_PATH`; varredura de órfãos no boot. Comentário usa o `EditorRico.svelte` e o `html.ts` do outro agente (combinar pela mensagem `write agent://Descricao`). Seção de comentários e anexos no painel: o agente Descrição é o dono do `PainelTarefa.svelte`; o agente 2 entrega um componente `ComentariosAnexos.svelte` e o Main monta.
+1. Smoke da imagem no Docker local com todos os fluxos no browser (login real, criar/editar tarefa, descrição, comentário, anexo, List/Kanban/Table, filtro salvo, link público, iCal, export, PWA offline).
+2. Rever `README.md`, `docs/instalacao.md` e `deploy/unraid/my-projMan.xml` (sem copiar o XML para o servidor).
+3. Tag de release `v1.0.0` e avisar o usuário para dar *force update*.
 
-**Integração (Main)**: `npm test`, `npm run check`, `npm run build`; verificação no browser com os dados reais (desktop e 390 px); smoke da imagem no Docker local; commit; avisar o usuário para dar *force update*.
-
-Depois: **item 11** (fechamento do v1). Recarregar a produção com o seed completo só se o usuário pedir, e com export antes (a produção já tem dados).
+Browser de verificação: o relay (Chrome do usuário) falha com digitação no TipTap e fica "not visible". Use Chrome headless próprio: `browser.open({ app: { path: 'C:/Program Files/Google/Chrome/Application/chrome.exe', args: ['--headless=new', '--user-data-dir=<temp>'] } })`, cookie com `page.setCookie` dentro de `tab.run`, e `tab.emulate({ viewport })` para a largura.
 
 ## Backlog de build (em ordem executável)
 
@@ -71,11 +71,11 @@ Cada item fecha completo antes do próximo. Entre parênteses, a origem.
 1. ✅ **Base da UI.** Tailwind + shadcn-svelte (tema padrão, base neutra), Boxicons, fonte do sistema. Tema claro/escuro por `prefers-color-scheme` + alternância guardada em `localStorage`. Shell do #14: sidebar fixa (smart lists, projetos, filtros salvos, seção "Arquivados" recolhida, tema), drawer no celular. As smart lists leem `GET /api/tarefas` com rolagem infinita por cursor. Estados vazio, carregando (skeleton) e erro inline. (#14, #11, decisão 17) — *feito em 2026-09-23. A página de projeto hoje é a mesma lista (`/?projeto=<id>`, mostra também arquivado); vira List view no item 5. Os ícones internos dos componentes shadcn vêm de `@lucide/svelte`; os nossos são Boxicons.*
 2. ✅ **Projetos e labels.** Criar, renomear, reordenar (`projects.position`), arquivar/desarquivar, apagar (físico, com confirmação). Labels globais: criar, cor, apagar. (#9) — *feito em 2026-09-23. Reordenar por botões subir/descer (renumera a lista toda, passo 1024); arrastar fica para quando o SortableJS entrar (item 6), se fizer falta. Confirmação com `confirm()` nativo.*
 3. ✅ **Tarefa.** Criação rápida (campo no topo + data no desktop; FAB + folha no celular). Detalhe em painel lateral com `?tarefa=<id>` (tela cheia no celular): título, prazo (com ou sem hora), prioridade 0–5, labels, recorrência, projeto. `marcarFeita` é o ponto único que escreve `done`, move o card para o bucket de feitas e avança a recorrência (`src/lib/datas.ts`). Subtarefas em um nível. Checkbox inline otimista com rollback. (#7, #8, #14) — *feito em 2026-09-24 (onda 1). Descrição só leitura até o item 4.*
-4. **Descrição rica.** TipTap no detalhe; `sanitize-html` na escrita, com a whitelist do #4; segunda passagem produz `description_text` para o FTS5. (#4, ADR 0002)
+4. ✅ **Descrição rica.** TipTap no detalhe; `sanitize-html` na escrita, com a whitelist do #4; segunda passagem produz `description_text` para o FTS5. (#4, ADR 0002)
 5. ✅ **List e Table.** Ordenação manual por view (`task_positions`): `entre(antes, depois)`, passo 1024, renumeração abaixo de 0,01, calculada no servidor. Table com colunas fixas. Ordenação e filtro de view na URL. (#7, #16, ADR 0001)
 6. ✅ **Kanban.** Três buckets por projeto, SortableJS (`forceFallback`, `delay: 250` só no toque). `PATCH` de mover: `{ bucket_id, antes, depois }`; o servidor calcula a posição e renumera a coluna. Mover para o bucket de feitas = `marcarFeita`, e sair dele reabre. O WIP só sinaliza. (#7, #16)
 7. ✅ **Filtros salvos.** CRUD com o construtor do #15 (formulário numa coluna, label com tem/não tem, "sem label alguma", "criada há mais de"). Toda escrita e leitura passa por `parseFiltro`. (#11, #15)
-8. **Comentários e anexos.** Comentário com o mesmo TipTap e a mesma sanitização. Anexo até 25 MB em `FILES_PATH`, metadados em `attachments`, download com `Content-Disposition`. Varredura de órfãos no boot. (#9, #12, ADR 0005)
+8. ✅ **Comentários e anexos.** Comentário com o mesmo TipTap e a mesma sanitização. Anexo até 25 MB em `FILES_PATH`, metadados em `attachments`, download com `Content-Disposition`. Varredura de órfãos no boot. (#9, #12, ADR 0005)
 9. ✅ **Link público.** Criar e revogar na UI do projeto (a rota `/share/<hash>` já existe). (#10)
 10. ✅ **PWA.** `src/service-worker.ts` nativo (cache-first nos assets, network-first no resto, mutação nunca cacheada), manifest com ícones 192/512 + maskable, reload no `controllerchange`. (#5, ADR 0004)
 11. **Fechamento do v1.** Smoke test da imagem no Docker local, com todos os fluxos. README e template revistos. Tag de release.

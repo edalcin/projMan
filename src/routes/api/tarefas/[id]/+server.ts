@@ -25,6 +25,10 @@ function campos(b: Record<string, unknown>): CamposTarefa {
 		if (typeof b.title !== 'string') throw new Invalido('title precisa ser texto.');
 		c.title = b.title;
 	}
+	if ('description' in b) {
+		if (typeof b.description !== 'string') throw new Invalido('description precisa ser texto.');
+		c.description = b.description;
+	}
 	if ('due_date' in b) {
 		c.due_date = typeof b.due_date === 'string' ? b.due_date : null;
 		c.due_all_day = 'due_all_day' in b ? !!b.due_all_day : true;
