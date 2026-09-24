@@ -234,7 +234,7 @@ consistente do banco inteiro e os arquivos dos Anexos em uso — nada é salvo
 no servidor, só baixado. É o backup manual, e também o caminho de
 restauração: não existe um "importar" dentro do app. Restaurar é parar o
 container, trocar o banco e a pasta de arquivos pelos do pacote, e subir de
-novo (README tem o passo a passo).
+novo (`docs/instalacao.md` tem o passo a passo).
 
 (`12-ical-export.md`)
 

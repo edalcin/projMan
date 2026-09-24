@@ -29,7 +29,7 @@ Código: [`src/lib/server/ical.ts`](../../src/lib/server/ical.ts) (rota `GET /ic
 | 14 | Anexos | `files/<stored_name>`, o mesmo caminho relativo de `FILES_PATH`. Vão só os que o **snapshot** referencia: órfãos no disco ficam de fora, e anexo apagado entre o snapshot e a leitura é pulado |
 | 15 | Acionamento | **Download pela UI**: `GET /api/export` com sessão. O botão entra com o shell (#14). Nada é escrito em volume |
 | 16 | Memória | Stream: snapshot em `tmpdir()`, depois cabeçalho + `createReadStream` por arquivo, gzip no fim do pipe. Memória constante. O snapshot é apagado no `finally`, também quando o download é cancelado (`pipeline` propaga o cancelamento) |
-| 17 | Import | **Não existe.** Restaurar = parar o container, descompactar, copiar `projman.db` para `DB_PATH` e `files/` para `FILES_PATH` (README). Um import pela app exigiria validar e trocar o banco com o processo vivo |
+| 17 | Import | **Não existe.** Restaurar = parar o container, descompactar, copiar `projman.db` para `DB_PATH` e `files/` para `FILES_PATH` (`docs/instalacao.md`). Um import pela app exigiria validar e trocar o banco com o processo vivo |
 
 Tetos conhecidos: `ustar` limita o nome a 100 bytes (o `stored_name` é gerado pelo
 servidor; nome longo lança erro, não corrompe) e o arquivo a 8 GiB. `VACUUM INTO`

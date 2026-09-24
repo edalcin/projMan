@@ -11,7 +11,7 @@
 
 O que já existe e funciona (`npm test`: 38 testes):
 
-- `Dockerfile`, CI (build → Trivy → push para `ghcr.io/edalcin/projman`), template do UNRAID em `deploy/unraid/my-projMan.xml`, README com instalação, backup, atualização e acesso só pela URL do `ORIGIN`.
+- `Dockerfile`, CI (build → Trivy → push para `ghcr.io/edalcin/projman`), template do UNRAID em `deploy/unraid/my-projMan.xml`, README para usuários; `docs/instalacao.md` com instalação, backup, atualização e acesso só pela URL do `ORIGIN`; `docs/desenvolvimento.md`.
 - Schema v1 (`migrations/001_inicial.sql`) e as migrações no boot, com snapshot `.bak` antes de migrar (`src/lib/server/migrar.ts`).
 - Regras de data e recorrência (`src/lib/datas.ts`); texto do prazo (`src/lib/prazo.ts`).
 - Autenticação: hook, `/login` (visual novo), `/logout`, sessão HMAC, rate limit. `Referrer-Policy: same-origin` (com `no-referrer` o browser mandava `Origin: null` e o CSRF barrava o login).
