@@ -4,11 +4,26 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="text-scale" content="scale" />
+		<link rel="manifest" href="/manifest.webmanifest" />
+		<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+		<meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)" />
 		<script nonce="%sveltekit.nonce%">
 			// Tema antes da pintura (sem piscar): escolha gravada, senão a do sistema.
 			const t = localStorage.getItem('tema');
 			if (t ? t === 'escuro' : matchMedia('(prefers-color-scheme: dark)').matches)
 				document.documentElement.classList.add('dark');
+		</script>
+		<script nonce="%sveltekit.nonce%">
+			// PWA (#10): service worker novo assume e recarrega a página uma vez,
+			// para nunca deixar HTML/JS de versões diferentes misturados.
+			if ('serviceWorker' in navigator) {
+				let recarregando = false;
+				navigator.serviceWorker.addEventListener('controllerchange', () => {
+					if (recarregando) return;
+					recarregando = true;
+					location.reload();
+				});
+			}
 		</script>
 		%sveltekit.head%
 	</head>

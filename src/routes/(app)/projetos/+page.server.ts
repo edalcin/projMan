@@ -6,8 +6,10 @@ import {
 	apagarProjeto,
 	atualizarProjeto,
 	cor,
+	criarLinkPublico,
 	criarProjeto,
 	moverProjeto,
+	revogarLinkPublico,
 	salvarLabel,
 	titulo
 } from '$lib/server/projetos';
@@ -18,7 +20,12 @@ export const load: PageServerLoad = () => ({
 		id: number;
 		title: string;
 		hex_color: string | null;
-	}[]
+	}[],
+	links: Object.fromEntries(
+		(db.prepare('SELECT project_id, hash FROM link_shares').all() as { project_id: number; hash: string }[]).map(
+			(l) => [l.project_id, l.hash]
+		)
+	) as Record<number, string>
 });
 
 function idDe(f: FormData): number {
@@ -52,5 +59,7 @@ export const actions: Actions = {
 	label: acao((f) =>
 		salvarLabel(db, f.get('id') ? idDe(f) : null, titulo(f.get('title')), cor(f.get('hex_color')))
 	),
-	apagarLabel: acao((f) => apagarLabel(db, idDe(f)))
+	apagarLabel: acao((f) => apagarLabel(db, idDe(f))),
+	linkCriar: acao((f) => criarLinkPublico(db, idDe(f)) !== false),
+	linkRevogar: acao((f) => revogarLinkPublico(db, idDe(f))),
 };

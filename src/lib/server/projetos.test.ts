@@ -3,7 +3,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import test from 'node:test';
 import Database from 'better-sqlite3';
 import { migrar } from './migrar.ts';
-import { Invalido, cor, criarProjeto, moverProjeto, salvarLabel, titulo } from './projetos.ts';
+import { Invalido, cor, criarLinkPublico, criarProjeto, linkPublicoDe, moverProjeto, revogarLinkPublico, salvarLabel, titulo } from './projetos.ts';
 
 const dir = new URL('../../../migrations/', import.meta.url);
 function banco() {
@@ -36,4 +36,24 @@ test('validação de nome, cor e label repetida', () => {
 	const db = banco();
 	salvarLabel(db, null, 'Urgente', null);
 	assert.throws(() => salvarLabel(db, null, 'urgente', null), Invalido, 'mesmo nome sem diferenciar caixa');
+});
+
+test('link público: criar, buscar, revogar apaga; criar de novo troca o hash', () => {
+	const db = banco();
+	db.prepare("INSERT INTO projects (id, title) VALUES (1, 'A')").run();
+	assert.equal(criarLinkPublico(db, 99), false, 'projeto inexistente');
+
+	const h1 = criarLinkPublico(db, 1);
+	assert.equal(typeof h1, 'string');
+	assert.equal((h1 as string).length, 40);
+	assert.equal(linkPublicoDe(db, 1), h1);
+
+	const h2 = criarLinkPublico(db, 1); // criar de novo não deixa dois hashes vivos
+	assert.notEqual(h2, h1);
+	assert.equal(linkPublicoDe(db, 1), h2);
+	assert.equal(db.prepare('SELECT count(*) FROM link_shares WHERE project_id = 1').pluck().get(), 1);
+
+	assert.ok(revogarLinkPublico(db, 1));
+	assert.equal(linkPublicoDe(db, 1), undefined);
+	assert.equal(revogarLinkPublico(db, 1), false, 'já revogado');
 });

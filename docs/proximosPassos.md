@@ -1,27 +1,30 @@
 # projMan — próximos passos
 
 > Documento de estado. Toda sessão nova começa por aqui.
-> Última atualização: 2026-09-23 (fim de sessão, encerrada pelo usuário para esperar os créditos).
+> Última atualização: 2026-09-24 (onda 1 integrada).
 
 ## Estado atual
 
-**Fase: build do v1.** Planejamento fechado (mapa [#1](https://github.com/edalcin/projMan/issues/1)). Itens 1 e 2 do backlog prontos. O **núcleo do item 3** também está pronto (ver abaixo). O resto dos itens 3–11 **não foi começado**: os 4 subagentes que iam fazê-los em paralelo foram parados na fase de leitura, sem escrever código. O working tree está limpo e a `main` sincronizada.
+**Fase: build do v1.** Planejamento fechado (mapa [#1](https://github.com/edalcin/projMan/issues/1)). **Onda 1 pronta** (2026-09-24): itens 1, 2, 3, 5, 6, 7, 9 e 10 do backlog. Faltam a **onda 2** (itens 4 e 8) e o item 11.
 
-**Produção no ar**: https://projman.dalc.in (UNRAID, login funcionando desde o fix do `Referrer-Policy`, commit `a49e923`), com o projeto "Entre Ciências" carregado do Vikunja. O usuário **vê só uma lista "flat"**: não dá para abrir tarefa, marcar feita, nem ver Kanban. Essa é a queixa a resolver primeiro.
+**Produção**: https://projman.dalc.in (UNRAID), com o projeto "Entre Ciências" do Vikunja. A imagem da onda 1 só chega lá quando o usuário der *force update*.
 
-O que já existe e funciona (`npm test`: 38 testes):
+O que já existe e funciona (`npm test`: 59 testes; `npm run check`: 0 erros, 4 warnings `state_referenced_locally` benignos):
 
-- `Dockerfile`, CI (build → Trivy → push para `ghcr.io/edalcin/projman`), template do UNRAID em `deploy/unraid/my-projMan.xml`, README para usuários; `docs/instalacao.md` com instalação, backup, atualização e acesso só pela URL do `ORIGIN`; `docs/desenvolvimento.md`.
+- `Dockerfile`, CI (build → Trivy → push para `ghcr.io/edalcin/projman`), template do UNRAID em `deploy/unraid/my-projMan.xml`. `README.md` é para o usuário; instalação e operação em `docs/instalacao.md`; desenvolvimento em `docs/desenvolvimento.md`.
 - Schema v1 (`migrations/001_inicial.sql`) e as migrações no boot, com snapshot `.bak` antes de migrar (`src/lib/server/migrar.ts`).
 - Regras de data e recorrência (`src/lib/datas.ts`); texto do prazo (`src/lib/prazo.ts`).
-- Autenticação: hook, `/login` (visual novo), `/logout`, sessão HMAC, rate limit. `Referrer-Policy: same-origin` (com `no-referrer` o browser mandava `Origin: null` e o CSRF barrava o login).
-- Smart lists, filtro salvo e lista por projeto: `resolverFiltro` + `listarTarefas` (`src/lib/server/filtro.ts`), `GET /api/tarefas?lista=|filtro=|projeto=`.
-- **Shell da UI** (item 1) e **Projetos e labels** (item 2, página `/projetos`).
-- **Núcleo do item 3** (commit `7b152c2`): `src/lib/server/tarefas.ts` com `criarTarefa` (fim da List + coluna padrão do Kanban) e `marcarFeita` (ponto único que escreve `done`; move o card; recorrência avança o prazo e reabre subtarefas), com `tarefas.test.ts`. `src/lib/server/posicao.ts` com `PASSO`, `MIN`, `entre()`.
-- Página pública `/share/<hash>` (visual novo), feed iCal `/ical/<token>`, export `/api/export`, saúde `/api/saude`.
+- Autenticação: hook, `/login`, `/logout`, sessão HMAC, rate limit. `Referrer-Policy: same-origin`.
+- Shell da UI, smart lists e `GET /api/tarefas?lista=|filtro=|projeto=` (`src/lib/server/filtro.ts`).
+- Projetos e labels (`/projetos`), com **link público** por projeto (criar, copiar, revogar).
+- **Tarefa**: `src/lib/server/tarefas.ts` (`criarTarefa`, `marcarFeita`, `lerTarefa`, `atualizarTarefa`, `apagarTarefa`); API `POST /api/tarefas`, `GET|PATCH|DELETE /api/tarefas/<id>`, `POST /api/tarefas/<id>/feita`, `GET /api/labels`. Painel `src/lib/components/tarefa/PainelTarefa.svelte` (abre com `?tarefa=<id>` em toda página do `(app)`), `CheckFeita.svelte`, `linkTarefa.ts`, `FabNovaTarefa.svelte`. Criação rápida no topo da lista e FAB no celular. Descrição só leitura (texto).
+- **Views** (`src/lib/server/views.ts`): `/projeto/<id>` (List, arrastar), `/projeto/<id>/kanban` (arrastar entre buckets; Feito ↔ `marcarFeita`), `/projeto/<id>/tabela` (`?ordem=`). Movimento em `POST /api/posicao/view` e `/api/posicao/kanban`. Na List a Subtarefa aparece solta, com o título da mãe ao lado (escondido no celular). A sidebar aponta para `/projeto/<id>`.
+- **Filtros salvos** (`src/lib/server/filtros-salvos.ts`): `/filtros`, `/filtros/novo`, `/filtros/<id>` com `ConstrutorFiltro.svelte`; link na sidebar.
+- **PWA**: `static/manifest.webmanifest`, `src/service-worker.ts`, reload no `controllerchange` em `src/app.html`.
+- Página pública `/share/<hash>`, feed iCal `/ical/<token>`, export `/api/export`, saúde `/api/saude`.
 - `scripts/seed-vikunja.py` (dados reais do Vikunja; token no `.env` local).
 
-Ainda não existe: API de tarefa (POST/GET/PATCH/DELETE/feita), painel de detalhe, criação rápida, checkbox, página do projeto com List/Kanban/Table, filtros salvos (CRUD), descrição rica, comentários, anexos, link público na UI, PWA.
+Ainda não existe: descrição rica (TipTap), comentários, anexos.
 
 ## Onde está a spec
 
@@ -52,39 +55,12 @@ Depois de cada onda: rode `npm test`, `npm run check`, `npm run build`; faça a 
 
 ## Plano da próxima sessão
 
-Mesma decomposição que ficou pronta em 2026-09-23. Dispare a **onda 1** como 4 subagentes em paralelo (ferramenta `task`, um `tasks[]`), cada um dono só dos seus arquivos, sem rodar `npm test`/`check`/`build` do projeto inteiro e sem commitar. Main integra, verifica e commita no fim da onda.
+**Onda 2** (o painel já existe). Dois agentes em paralelo, mesmo método da onda 1: cada um dono só dos seus arquivos, sem rodar `npm test`/`check`/`build` do projeto inteiro, sem commit; o Main instala as dependências **antes** de disparar (`npm i @tiptap/core @tiptap/starter-kit @tiptap/extension-link sanitize-html && npm i -D @types/sanitize-html --ignore-scripts`, confirme os pacotes no #4), recopia `.dev-wipe-me.db` para `.dev-agente{1,2}.db` e integra no fim. Screenshots de verificação vão para `C:\Users\EDalcin\Desktop\OMPtemp`.
 
-**Preparação** (Main, antes de disparar): `cp .dev-wipe-me.db .dev-agente{1..4}.db` (os arquivos já existem da sessão anterior; recopie para partir dos dados reais limpos). Cada agente sobe o próprio dev server com o `hub` (`op:start`): `node node_modules/vite/bin/vite.js dev --port <porta> --strictPort --host 127.0.0.1`, env `ADMIN_PASSWORD_HASH=scrypt:x SESSION_SECRET=prototipo-prototipo-prototipo-prototipo TZ=America/Sao_Paulo ORIGIN=http://127.0.0.1:<porta> FILES_PATH=D:/git/projMan/.svelte-kit DB_PATH=D:/git/projMan/<banco>`.
+- **Descrição** (5181 / `.dev-agente1.db`), item 4: `src/lib/server/html.ts` (sanitização com a whitelist do #4 + `description_text`) + teste; editor `src/lib/components/tarefa/EditorRico.svelte` (TipTap) usado no `PainelTarefa.svelte`; `PATCH /api/tarefas/<id>` aceita `description`. Estender `scripts/seed-vikunja.py` para trazer o HTML sanitizado.
+- **Comentários e anexos** (5182 / `.dev-agente2.db`), item 8: `src/lib/server/comentarios.ts`, `src/lib/server/anexos.ts` + testes; rotas `src/routes/api/tarefas/[id]/comentarios/**`, `src/routes/api/tarefas/[id]/anexos/**`, download com `Content-Disposition`; anexo ≤25 MB em `FILES_PATH`; varredura de órfãos no boot. Comentário usa o `EditorRico.svelte` e o `html.ts` do outro agente (combinar pela mensagem `write agent://Descricao`). Seção de comentários e anexos no painel: o agente Descrição é o dono do `PainelTarefa.svelte`; o agente 2 entrega um componente `ComentariosAnexos.svelte` e o Main monta.
 
-### Contratos fixos (onda 1)
-
-1. **Painel de detalhe**: `src/lib/components/tarefa/PainelTarefa.svelte`, montado uma vez em `src/routes/(app)/+layout.svelte` (pelo agente Tarefa). Abre quando a URL tem `?tarefa=<id>` em qualquer página do grupo `(app)` (painel de ~380 px no desktop; tela cheia ≤768 px); fecha removendo o parâmetro. Toda view abre uma tarefa com link para a URL atual + `tarefa=<id>`. Depois de mutação: `invalidateAll()`.
-2. **API JSON** (agente Tarefa implementa, os outros consomem):
-   - `POST /api/tarefas` `{project_id, title, due_date?, due_all_day?, priority?, parent_task_id?}` → 201 `{id}` (usa `criarTarefa`).
-   - `GET /api/tarefas/<id>` → `{id, project_id, projeto, parent_task_id, mae, title, description, done, due_date, due_all_day, priority, repeat_every, repeat_unit, created_at, labels: number[], subtarefas: [{id,title,done}]}`.
-   - `PATCH /api/tarefas/<id>` parcial `{title?, due_date?, due_all_day?, priority?, repeat_every?, repeat_unit?, labels?: number[], project_id?}` → `{ok:true}`. Trocar de projeto remove e recria as linhas de `task_positions`/`task_buckets` no projeto novo; o trigger de subtarefa vira 400.
-   - `DELETE /api/tarefas/<id>` → 204. `POST /api/tarefas/<id>/feita` `{feita: boolean}` → `{ok:true}` (usa `marcarFeita`). `GET /api/labels` → labels.
-   - Prazo: com hora, o cliente manda `toISOString()`; dia inteiro, manda `YYYY-MM-DD` + `due_all_day:true`, e o **servidor** converte para o fim daquele dia civil no `TZ` (#8).
-3. **Página do projeto** (agente Views): `src/routes/(app)/projeto/[id]/` com abas List (`/projeto/<id>`), Kanban (`/projeto/<id>/kanban`) e Table (`/projeto/<id>/tabela`). Só Main troca os links da sidebar de `/?projeto=<id>` para `/projeto/<id>` e adiciona o link `/filtros`.
-4. **Checkbox** em qualquer linha ou card: otimista → `POST /api/tarefas/<id>/feita`; se falhar, reverte e mostra erro inline, sem retry.
-
-Validação em tudo que vem do cliente (ids inteiros seguros, strings com trim ≤200, enums); SQL só com fragmentos fixos e parâmetros; 400 com mensagem, 404 para id inexistente.
-
-### Onda 1: quatro agentes
-
-| Agente | Porta / banco | Itens | Dono de | Pronto quando |
-|---|---|---|---|---|
-| **Tarefa** | 5181 / `.dev-agente1.db` | 3 | `src/routes/api/tarefas/+server.ts` (+POST), `src/routes/api/tarefas/[id]/**`, `src/routes/api/labels/**`, `src/lib/components/tarefa/**`, `src/routes/(app)/+page.svelte`, `src/routes/(app)/+layout.svelte` (só montar o painel e o FAB), funções novas em `src/lib/server/tarefas.ts` (`lerTarefa`, `atualizarTarefa`, `apagarTarefa`, troca de labels) + teste | Clicar abre o painel; editar título/prazo/prioridade/labels/recorrência/projeto persiste; subtarefas (um nível) com checkbox e criação inline; marcar feita e apagar funcionam; criação rápida no topo (desktop: título + data, no projeto atual ou no primeiro projeto ativo) e FAB + sheet no celular; linhas com checkbox e título como link. Descrição só leitura (TipTap é o item 4). Precisará de componentes shadcn: `select`, `label`, `textarea`, `alert-dialog` |
-| **Views** | 5182 / `.dev-agente2.db` | 5 e 6 | `src/routes/(app)/projeto/[id]/**`, `src/lib/server/views.ts` + teste, `src/routes/api/posicao/**`, `package.json` (`npm i sortablejs && npm i -D @types/sortablejs --ignore-scripts`) | List com todas as tarefas do projeto (abertas; `?feitas=1` mostra as feitas), subtarefas recuadas, arrastar pela alça → `{task_id, view_id, antes, depois}` e o servidor calcula `entre()` e renumera a view abaixo de `MIN`. Table com colunas fixas e `?ordem=titulo|prazo|prioridade`. Kanban: colunas dos buckets, cards por `task_buckets.position`, WIP só sinaliza, arrastar → `{task_id, bucket_id, antes, depois}`; entrar no bucket de feitas = `marcarFeita(true)`, sair dele = `marcarFeita(false)`, depois grava a posição do drop. SortableJS com `forceFallback`, `delay:250`, `delayOnTouchOnly`; no `onEnd` devolve o nó e atualiza o estado (padrão da branch `prototipo/16-kanban`). Carrega a view inteira (sem rolagem infinita) |
-| **Filtros** | 5183 / `.dev-agente3.db` | 7 | `src/routes/(app)/filtros/**`, `src/lib/server/filtros-salvos.ts` + teste | Plano já feito pelo agente: `formParaFiltro(form)` puro + criar/atualizar/apagar/mover/buscar (mover igual a `moverProjeto`; `parseFiltro` sempre antes de gravar; título com `titulo()`). Rotas `/filtros` (lista, subir/descer, apagar), `/filtros/novo`, `/filtros/<id>` com um componente `ConstrutorFiltro.svelte` (radio e select **nativos** estilizados, sem instalar componentes novos; labels com rádio de 3 vias ''/in/notIn + "sem label alguma"). Salvar redireciona para `/?filtro=<id>`. Os 4 casos do #15 criados pela UI mostram as tarefas certas |
-| **PwaLink** | 5184 / `.dev-agente4.db` | 9 e 10 | `src/routes/(app)/projetos/+page.svelte` e `+page.server.ts` (só o link público), funções de link em `src/lib/server/projetos.ts` + teste, `src/service-worker.ts`, `static/manifest.webmanifest`, `src/app.html` | Link público por projeto em `/projetos`: criar (hash `crypto.randomBytes(30).toString('base64url')`, 40 chars), mostrar URL com copiar, revogar (apaga a linha). Sem cookie, `/share/<hash>` abre; depois de revogar, 404. PWA: manifest (start_url `/?lista=hoje`, standalone, ícones 192/512 + maskable), `<link rel=manifest>` e theme-color claro/escuro, SW nativo (`$service-worker`): cache-first nos assets, network-first com fallback para GET de navegação e `GET /api/tarefas*`, nunca cachear não-GET, nunca `/login`, `/logout`, `/api/export`, `/ical/*`; `skipWaiting` + `clients.claim` + reload no `controllerchange` (script inline com `nonce="%sveltekit.nonce%"`) |
-
-**Integração da onda 1 (Main)**: sidebar → `/projeto/<id>` e link `/filtros`; conferir que o painel abre a partir das três views; `npm test`, `npm run check`, `npm run build`; verificação no browser com os dados reais (desktop e 390 px); commit; smoke da imagem no Docker local; avisar o usuário para dar *force update*.
-
-### Onda 2 (depende do painel)
-
-- **Item 4 (descrição rica)**: TipTap no painel; `sanitize-html` na escrita (whitelist do #4); segunda passagem gera `description_text`. Estender `scripts/seed-vikunja.py` para trazer o HTML da descrição sanitizado.
-- **Item 8 (comentários e anexos)**: no painel; anexo ≤25 MB em `FILES_PATH`; varredura de órfãos no boot. Estender o seed para comentários e anexos.
+**Integração (Main)**: `npm test`, `npm run check`, `npm run build`; verificação no browser com os dados reais (desktop e 390 px); smoke da imagem no Docker local; commit; avisar o usuário para dar *force update*.
 
 Depois: **item 11** (fechamento do v1). Recarregar a produção com o seed completo só se o usuário pedir, e com export antes (a produção já tem dados).
 
@@ -94,14 +70,14 @@ Cada item fecha completo antes do próximo. Entre parênteses, a origem.
 
 1. ✅ **Base da UI.** Tailwind + shadcn-svelte (tema padrão, base neutra), Boxicons, fonte do sistema. Tema claro/escuro por `prefers-color-scheme` + alternância guardada em `localStorage`. Shell do #14: sidebar fixa (smart lists, projetos, filtros salvos, seção "Arquivados" recolhida, tema), drawer no celular. As smart lists leem `GET /api/tarefas` com rolagem infinita por cursor. Estados vazio, carregando (skeleton) e erro inline. (#14, #11, decisão 17) — *feito em 2026-09-23. A página de projeto hoje é a mesma lista (`/?projeto=<id>`, mostra também arquivado); vira List view no item 5. Os ícones internos dos componentes shadcn vêm de `@lucide/svelte`; os nossos são Boxicons.*
 2. ✅ **Projetos e labels.** Criar, renomear, reordenar (`projects.position`), arquivar/desarquivar, apagar (físico, com confirmação). Labels globais: criar, cor, apagar. (#9) — *feito em 2026-09-23. Reordenar por botões subir/descer (renumera a lista toda, passo 1024); arrastar fica para quando o SortableJS entrar (item 6), se fizer falta. Confirmação com `confirm()` nativo.*
-3. ◐ **Tarefa.** Criação rápida (campo no topo + data no desktop; FAB + folha no celular). Detalhe em painel lateral com `?tarefa=<id>` (tela cheia no celular): título, prazo (com ou sem hora), prioridade 0–5, labels, recorrência, projeto. `marcarFeita` é o ponto único que escreve `done`, move o card para o bucket de feitas e avança a recorrência (`src/lib/datas.ts`). Subtarefas em um nível. Checkbox inline otimista com rollback. (#7, #8, #14) — *núcleo pronto (`criarTarefa`, `marcarFeita`, testes); API, painel e UI vão na onda 1 do plano.*
+3. ✅ **Tarefa.** Criação rápida (campo no topo + data no desktop; FAB + folha no celular). Detalhe em painel lateral com `?tarefa=<id>` (tela cheia no celular): título, prazo (com ou sem hora), prioridade 0–5, labels, recorrência, projeto. `marcarFeita` é o ponto único que escreve `done`, move o card para o bucket de feitas e avança a recorrência (`src/lib/datas.ts`). Subtarefas em um nível. Checkbox inline otimista com rollback. (#7, #8, #14) — *feito em 2026-09-24 (onda 1). Descrição só leitura até o item 4.*
 4. **Descrição rica.** TipTap no detalhe; `sanitize-html` na escrita, com a whitelist do #4; segunda passagem produz `description_text` para o FTS5. (#4, ADR 0002)
-5. **List e Table.** Ordenação manual por view (`task_positions`): `entre(antes, depois)`, passo 1024, renumeração abaixo de 0,01, calculada no servidor. Table com colunas fixas. Ordenação e filtro de view na URL. (#7, #16, ADR 0001)
-6. **Kanban.** Três buckets por projeto, SortableJS (`forceFallback`, `delay: 250` só no toque). `PATCH` de mover: `{ bucket_id, antes, depois }`; o servidor calcula a posição e renumera a coluna. Mover para o bucket de feitas = `marcarFeita`, e sair dele reabre. O WIP só sinaliza. (#7, #16)
-7. **Filtros salvos.** CRUD com o construtor do #15 (formulário numa coluna, label com tem/não tem, "sem label alguma", "criada há mais de"). Toda escrita e leitura passa por `parseFiltro`. (#11, #15)
+5. ✅ **List e Table.** Ordenação manual por view (`task_positions`): `entre(antes, depois)`, passo 1024, renumeração abaixo de 0,01, calculada no servidor. Table com colunas fixas. Ordenação e filtro de view na URL. (#7, #16, ADR 0001)
+6. ✅ **Kanban.** Três buckets por projeto, SortableJS (`forceFallback`, `delay: 250` só no toque). `PATCH` de mover: `{ bucket_id, antes, depois }`; o servidor calcula a posição e renumera a coluna. Mover para o bucket de feitas = `marcarFeita`, e sair dele reabre. O WIP só sinaliza. (#7, #16)
+7. ✅ **Filtros salvos.** CRUD com o construtor do #15 (formulário numa coluna, label com tem/não tem, "sem label alguma", "criada há mais de"). Toda escrita e leitura passa por `parseFiltro`. (#11, #15)
 8. **Comentários e anexos.** Comentário com o mesmo TipTap e a mesma sanitização. Anexo até 25 MB em `FILES_PATH`, metadados em `attachments`, download com `Content-Disposition`. Varredura de órfãos no boot. (#9, #12, ADR 0005)
-9. **Link público.** Criar e revogar na UI do projeto (a rota `/share/<hash>` já existe). (#10)
-10. **PWA.** `src/service-worker.ts` nativo (cache-first nos assets, network-first no resto, mutação nunca cacheada), manifest com ícones 192/512 + maskable, reload no `controllerchange`. (#5, ADR 0004)
+9. ✅ **Link público.** Criar e revogar na UI do projeto (a rota `/share/<hash>` já existe). (#10)
+10. ✅ **PWA.** `src/service-worker.ts` nativo (cache-first nos assets, network-first no resto, mutação nunca cacheada), manifest com ícones 192/512 + maskable, reload no `controllerchange`. (#5, ADR 0004)
 11. **Fechamento do v1.** Smoke test da imagem no Docker local, com todos os fluxos. README e template revistos. Tag de release.
 
 **Depois do v1** (fora): Web Push, Gantt (+ `blocked_by`), multiusuário, OR no filtro, favoritos de projeto, i18n.
@@ -136,7 +112,8 @@ python scripts/seed-vikunja.py "Entre Ciências" .dev-wipe-me.db --substituir
 - **Módulo de servidor com efeito no import** precisa do guarda `building` de `$app/environment`.
 - **Python no Windows**: grave seed com `encoding='utf-8'`; `subprocess(shell=True)` usa `cmd.exe`.
 - **Export**: `VACUUM INTO` grava em `tmpdir()`; `/tmp` do container deve ficar vazio depois do download.
-- **Browser de verificação (relay)**: com `emulate({ device })`, `tab.click` por coordenada pode acertar o elemento errado. Use `evaluate("el.click()")` ou teste sem emulação.
+- **Browser de verificação (relay)**: é uma aba só, compartilhada por todos os subagentes: em paralelo eles se atropelam; o Main verifica no fim. Screenshot sai em `~/Desktop`: mova para `~/Desktop/OMPtemp`. Arrastar com SortableJS funciona com `page.mouse` (down, moves em passos, up) mirando o `ul[data-bucket]`; coluna fora da tela não recebe o drop (role o contêiner antes).
+- **Browser (emulação)**: com `emulate({ device })`, `tab.click` por coordenada pode acertar o elemento errado. Use `evaluate("el.click()")` ou teste sem emulação.
 - **Vite no Windows**: `localhost` resolve para `::1`; a checagem de porta do `hub` espera `127.0.0.1`. Suba com `--host 127.0.0.1`.
 
 ## Fatos do ambiente

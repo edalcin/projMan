@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import Database from 'better-sqlite3';
 
 /** Entrada inválida vinda do formulário. A mensagem vai para a UI. */
@@ -69,3 +70,25 @@ export function salvarLabel(db: Database.Database, id: number | null, nome: stri
 
 export const apagarLabel = (db: Database.Database, id: number) =>
 	db.prepare('DELETE FROM labels WHERE id = ?').run(id).changes > 0;
+
+/**
+ * Link Público (#10): um por Projeto. Criar apaga um anterior, se existir —
+ * nunca dois hashes vivos ao mesmo tempo para o mesmo projeto.
+ */
+export function criarLinkPublico(db: Database.Database, projectId: number): string | false {
+	if (!db.prepare('SELECT 1 FROM projects WHERE id = ?').get(projectId)) return false;
+	const hash = randomBytes(30).toString('base64url'); // 30 bytes = 40 chars base64url, sem padding
+	db.transaction(() => {
+		db.prepare('DELETE FROM link_shares WHERE project_id = ?').run(projectId);
+		db.prepare('INSERT INTO link_shares (project_id, hash) VALUES (?, ?)').run(projectId, hash);
+	})();
+	return hash;
+}
+
+/** Revogar é apagar a linha: sem prazo de validade, sem reativar o mesmo endereço. */
+export const revogarLinkPublico = (db: Database.Database, projectId: number) =>
+	db.prepare('DELETE FROM link_shares WHERE project_id = ?').run(projectId).changes > 0;
+
+export const linkPublicoDe = (db: Database.Database, projectId: number) =>
+	db.prepare('SELECT hash FROM link_shares WHERE project_id = ?').pluck().get(projectId) as string | undefined;
+

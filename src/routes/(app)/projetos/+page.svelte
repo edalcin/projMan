@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { page } from '$app/state';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -14,6 +15,14 @@
 		};
 	// Formulários de edição: sem reset depois de salvar, o campo mostra o valor novo.
 	const manter: SubmitFunction = () => ({ update }) => update({ reset: false });
+
+	// Link Público (#10): copiar dá um retorno visual de 2s, sem estado no servidor.
+	let copiadoId = $state<number | null>(null);
+	async function copiar(id: number, hash: string) {
+		await navigator.clipboard.writeText(`${page.url.origin}/share/${hash}`);
+		copiadoId = id;
+		setTimeout(() => (copiadoId = copiadoId === id ? null : copiadoId), 2000);
+	}
 </script>
 
 <svelte:head><title>Projetos e labels · projMan</title></svelte:head>
@@ -36,28 +45,59 @@
 
 		<ul class="divide-y">
 			{#each data.projetos as p, i (p.id)}
-				<li class="flex items-center gap-1 py-2" class:opacity-60={p.archived}>
-					<form method="POST" action="?/renomear" use:enhance={manter} class="flex flex-1 gap-2">
-						<input type="hidden" name="id" value={p.id} />
-						<Input name="title" value={p.title} required maxlength={200} aria-label="Nome do projeto" />
-						<Button type="submit" variant="ghost" size="icon" title="Salvar nome">{@render icone('bx-check', 'Salvar nome')}</Button>
-					</form>
-					<form method="POST" action="?/mover" use:enhance={manter} class="flex">
-						<input type="hidden" name="id" value={p.id} />
-						<Button type="submit" name="delta" value="-1" variant="ghost" size="icon" disabled={i === 0} title="Subir">{@render icone('bx-chevron-up', 'Subir')}</Button>
-						<Button type="submit" name="delta" value="1" variant="ghost" size="icon" disabled={i === data.projetos.length - 1} title="Descer">{@render icone('bx-chevron-down', 'Descer')}</Button>
-					</form>
-					<form method="POST" action="?/arquivar" use:enhance={manter}>
-						<input type="hidden" name="id" value={p.id} />
-						<input type="hidden" name="archived" value={p.archived ? '0' : '1'} />
-						<Button type="submit" variant="ghost" size="icon" title={p.archived ? 'Desarquivar' : 'Arquivar'}>
-							{@render icone(p.archived ? 'bx-archive-out' : 'bx-archive-in', p.archived ? 'Desarquivar' : 'Arquivar')}
-						</Button>
-					</form>
-					<form method="POST" action="?/apagar" use:enhance={confirmar(`Apagar "${p.title}" com todas as tarefas? Não tem volta.`)}>
-						<input type="hidden" name="id" value={p.id} />
-						<Button type="submit" variant="ghost" size="icon" class="text-destructive" title="Apagar">{@render icone('bx-trash', 'Apagar')}</Button>
-					</form>
+				<li class="space-y-1 py-2" class:opacity-60={p.archived}>
+					<div class="flex items-center gap-1">
+						<form method="POST" action="?/renomear" use:enhance={manter} class="flex flex-1 gap-2">
+							<input type="hidden" name="id" value={p.id} />
+							<Input name="title" value={p.title} required maxlength={200} aria-label="Nome do projeto" />
+							<Button type="submit" variant="ghost" size="icon" title="Salvar nome">{@render icone('bx-check', 'Salvar nome')}</Button>
+						</form>
+						<form method="POST" action="?/mover" use:enhance={manter} class="flex">
+							<input type="hidden" name="id" value={p.id} />
+							<Button type="submit" name="delta" value="-1" variant="ghost" size="icon" disabled={i === 0} title="Subir">{@render icone('bx-chevron-up', 'Subir')}</Button>
+							<Button type="submit" name="delta" value="1" variant="ghost" size="icon" disabled={i === data.projetos.length - 1} title="Descer">{@render icone('bx-chevron-down', 'Descer')}</Button>
+						</form>
+						<form method="POST" action="?/arquivar" use:enhance={manter}>
+							<input type="hidden" name="id" value={p.id} />
+							<input type="hidden" name="archived" value={p.archived ? '0' : '1'} />
+							<Button type="submit" variant="ghost" size="icon" title={p.archived ? 'Desarquivar' : 'Arquivar'}>
+								{@render icone(p.archived ? 'bx-archive-out' : 'bx-archive-in', p.archived ? 'Desarquivar' : 'Arquivar')}
+							</Button>
+						</form>
+						<form method="POST" action="?/apagar" use:enhance={confirmar(`Apagar "${p.title}" com todas as tarefas? Não tem volta.`)}>
+							<input type="hidden" name="id" value={p.id} />
+							<Button type="submit" variant="ghost" size="icon" class="text-destructive" title="Apagar">{@render icone('bx-trash', 'Apagar')}</Button>
+						</form>
+					</div>
+					<div class="flex min-w-0 items-center gap-1 pl-1 text-xs text-muted-foreground">
+						{#if data.links[p.id]}
+							<i class="bx bx-link shrink-0 text-sm"></i>
+							<span class="min-w-0 truncate font-mono">{page.url.origin}/share/{data.links[p.id]}</span>
+							<Button
+								type="button"
+								variant="ghost"
+								size="icon"
+								class="size-6 shrink-0"
+								title="Copiar link"
+								onclick={() => copiar(p.id, data.links[p.id])}
+							>
+								{@render icone(copiadoId === p.id ? 'bx-check' : 'bx-copy', 'Copiar link')}
+							</Button>
+							<form method="POST" action="?/linkRevogar" use:enhance={manter} class="shrink-0">
+								<input type="hidden" name="id" value={p.id} />
+								<Button type="submit" variant="ghost" size="icon" class="size-6 text-destructive" title="Revogar link">
+									{@render icone('bx-unlink', 'Revogar link')}
+								</Button>
+							</form>
+						{:else}
+							<form method="POST" action="?/linkCriar" use:enhance={manter}>
+								<input type="hidden" name="id" value={p.id} />
+								<Button type="submit" variant="ghost" size="sm" class="h-6 gap-1 px-2 text-xs">
+									{@render icone('bx-link', 'Criar link público')} Link público
+								</Button>
+							</form>
+						{/if}
+					</div>
 				</li>
 			{:else}
 				<li class="py-6 text-center text-sm text-muted-foreground">Nenhum projeto ainda. Crie o primeiro acima.</li>

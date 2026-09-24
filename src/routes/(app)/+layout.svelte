@@ -5,11 +5,14 @@
 	import { SMART_LISTS } from '$lib/listas';
 	import FecharDrawer from './FecharDrawer.svelte';
 	import Tema from './Tema.svelte';
+	import FabNovaTarefa from '$lib/components/tarefa/FabNovaTarefa.svelte';
+	import PainelTarefa from '$lib/components/tarefa/PainelTarefa.svelte';
 
 	let { data, children } = $props();
 	const ativos = $derived(data.projetos.filter((p) => !p.archived));
 	const arquivados = $derived(data.projetos.filter((p) => p.archived));
 	const q = $derived(page.url.searchParams);
+	const projetoAtual = $derived(page.url.pathname.match(/^\/projeto\/(\d+)/)?.[1]);
 </script>
 
 {#snippet item(href: string, icone: string, nome: string, ativo: boolean)}
@@ -45,23 +48,28 @@
 				</Sidebar.GroupAction>
 				<Sidebar.Menu>
 					{#each ativos as p (p.id)}
-						{@render item(`/?projeto=${p.id}`, 'bx-folder', p.title, q.get('projeto') === String(p.id))}
+						{@render item(`/projeto/${p.id}`, 'bx-folder', p.title, projetoAtual === String(p.id))}
 					{:else}
 						<p class="px-2 text-xs text-muted-foreground">Nenhum projeto ainda. <a href="/projetos" class="underline">Criar</a></p>
 					{/each}
 				</Sidebar.Menu>
 			</Sidebar.Group>
 
-			{#if data.filtros.length}
-				<Sidebar.Group>
-					<Sidebar.GroupLabel>Filtros salvos</Sidebar.GroupLabel>
-					<Sidebar.Menu>
-						{#each data.filtros as f (f.id)}
-							{@render item(`/?filtro=${f.id}`, 'bx-filter-alt', f.title, q.get('filtro') === String(f.id))}
-						{/each}
-					</Sidebar.Menu>
-				</Sidebar.Group>
-			{/if}
+			<Sidebar.Group>
+				<Sidebar.GroupLabel>Filtros salvos</Sidebar.GroupLabel>
+				<Sidebar.GroupAction title="Gerenciar filtros salvos">
+					{#snippet child({ props })}
+						<a href="/filtros" {...props}><i class="bx bx-cog"></i><span class="sr-only">Gerenciar filtros salvos</span></a>
+					{/snippet}
+				</Sidebar.GroupAction>
+				<Sidebar.Menu>
+					{#each data.filtros as f (f.id)}
+						{@render item(`/?filtro=${f.id}`, 'bx-filter-alt', f.title, q.get('filtro') === String(f.id))}
+					{:else}
+						<p class="px-2 text-xs text-muted-foreground">Nenhum filtro ainda. <a href="/filtros/novo" class="underline">Criar</a></p>
+					{/each}
+				</Sidebar.Menu>
+			</Sidebar.Group>
 
 			{#if arquivados.length}
 				<Collapsible.Root>
@@ -77,7 +85,7 @@
 						<Collapsible.Content>
 							<Sidebar.Menu>
 								{#each arquivados as p (p.id)}
-									{@render item(`/?projeto=${p.id}`, 'bx-archive', p.title, q.get('projeto') === String(p.id))}
+									{@render item(`/projeto/${p.id}`, 'bx-archive', p.title, projetoAtual === String(p.id))}
 								{/each}
 							</Sidebar.Menu>
 						</Collapsible.Content>
@@ -96,3 +104,6 @@
 		{@render children()}
 	</Sidebar.Inset>
 </Sidebar.Provider>
+
+<PainelTarefa />
+<FabNovaTarefa />

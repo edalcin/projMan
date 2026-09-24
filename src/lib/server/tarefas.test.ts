@@ -3,7 +3,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import test from 'node:test';
 import Database from 'better-sqlite3';
 import { migrar } from './migrar.ts';
-import { criarTarefa, marcarFeita } from './tarefas.ts';
+import { Invalido, apagarTarefa, atualizarTarefa, criarTarefa, lerTarefa, marcarFeita, normalizarPrazo } from './tarefas.ts';
 
 const TZ = 'America/Sao_Paulo';
 const AGORA = Date.parse('2026-09-22T15:00:00.000Z');
@@ -13,7 +13,7 @@ function banco() {
 	const db = new Database(':memory:');
 	db.pragma('foreign_keys = ON');
 	migrar(db, Object.fromEntries(readdirSync(dir).map((f) => [f, readFileSync(new URL(f, dir), 'utf8')])));
-	db.prepare("INSERT INTO projects (id, title) VALUES (1, 'P')").run();
+	db.prepare("INSERT INTO projects (id, title) VALUES (1, 'P'), (2, 'Q')").run();
 	return db;
 }
 const coluna = (db: Database.Database, id: number) =>
@@ -51,4 +51,77 @@ test('recorrente feita avança o prazo, fica aberta e reabre as subtarefas', () 
 	const t = tarefa(db, id);
 	assert.deepEqual([t.done, t.due_date, coluna(db, id)], [0, '2026-10-10T15:00:00.000Z', 'A fazer']);
 	assert.equal(tarefa(db, sub).done, 0, 'subtarefa reaberta');
+});
+
+test('lerTarefa devolve labels e subtarefas', () => {
+	const db = banco();
+	db.prepare("INSERT INTO labels (id, title) VALUES (1, 'urgente')").run();
+	const id = criarTarefa(db, { project_id: 1, title: 'mãe' });
+	db.prepare('INSERT INTO task_labels (task_id, label_id) VALUES (?, 1)').run(id);
+	const sub = criarTarefa(db, { project_id: 1, title: 'filha', parent_task_id: id });
+	const t = lerTarefa(db, id)!;
+	assert.equal(t.projeto, 'P');
+	assert.deepEqual(t.labels, [1]);
+	assert.deepEqual(t.subtarefas, [{ id: sub, title: 'filha', done: 0 }]);
+	assert.equal(lerTarefa(db, 999), null);
+});
+
+test('normalizarPrazo: dia inteiro converte YYYY-MM-DD para o fim do dia civil no fuso', () => {
+	const n = normalizarPrazo('2026-09-22', true, TZ);
+	assert.deepEqual(n, { due_date: new Date('2026-09-23T02:59:59.999Z').toISOString(), due_all_day: 1 });
+	assert.throws(() => normalizarPrazo('não é data', true, TZ), Invalido);
+	assert.deepEqual(normalizarPrazo(null, true, TZ), { due_date: null, due_all_day: 1 });
+	assert.deepEqual(normalizarPrazo('2026-09-22T10:00:00.000Z', false, TZ), { due_date: '2026-09-22T10:00:00.000Z', due_all_day: 0 });
+});
+
+test('atualizarTarefa: título, prazo e prioridade', () => {
+	const db = banco();
+	const id = criarTarefa(db, { project_id: 1, title: 'x' });
+	assert.ok(atualizarTarefa(db, id, { title: '  novo  ', priority: 3 }, { tz: TZ }));
+	let t = lerTarefa(db, id)!;
+	assert.deepEqual([t.title, t.priority], ['novo', 3]);
+	assert.ok(atualizarTarefa(db, id, { due_date: '2026-10-01', due_all_day: true }, { tz: TZ }));
+	t = lerTarefa(db, id)!;
+	assert.deepEqual([t.due_date, t.due_all_day], [new Date('2026-10-02T02:59:59.999Z').toISOString(), 1]);
+	assert.throws(() => atualizarTarefa(db, id, { title: '' }, { tz: TZ }), Invalido);
+	assert.throws(() => atualizarTarefa(db, id, { priority: 9 }, { tz: TZ }), Invalido);
+	assert.throws(() => atualizarTarefa(db, id, { repeat_every: 2 }, { tz: TZ }), Invalido);
+	assert.equal(atualizarTarefa(db, 999, { priority: 1 }, { tz: TZ }), false);
+});
+
+test('atualizarTarefa: troca de labels substitui o conjunto inteiro', () => {
+	const db = banco();
+	db.prepare("INSERT INTO labels (id, title) VALUES (1, 'a'), (2, 'b')").run();
+	const id = criarTarefa(db, { project_id: 1, title: 'x' });
+	atualizarTarefa(db, id, { labels: [1, 2] }, { tz: TZ });
+	assert.deepEqual(lerTarefa(db, id)!.labels, [1, 2]);
+	atualizarTarefa(db, id, { labels: [2] }, { tz: TZ });
+	assert.deepEqual(lerTarefa(db, id)!.labels, [2]);
+	assert.throws(() => atualizarTarefa(db, id, { labels: ['x' as unknown as number] }, { tz: TZ }), Invalido);
+});
+
+test('atualizarTarefa: trocar de projeto refaz as posições; subtarefa não pode trocar sozinha', () => {
+	const db = banco();
+	const id = criarTarefa(db, { project_id: 1, title: 'x' });
+	assert.ok(atualizarTarefa(db, id, { project_id: 2 }, { tz: TZ }));
+	const t = lerTarefa(db, id)!;
+	assert.equal(t.project_id, 2);
+	assert.equal(coluna(db, id), 'A fazer');
+	const pos = db.prepare('SELECT project_view_id FROM task_positions WHERE task_id = ?').pluck().get(id);
+	const listaProjeto2 = db.prepare(`SELECT id FROM project_views WHERE project_id = 2 AND view_kind = 'list'`).pluck().get();
+	assert.equal(pos, listaProjeto2);
+
+	const mae = criarTarefa(db, { project_id: 1, title: 'mãe' });
+	const sub = criarTarefa(db, { project_id: 1, title: 'filha', parent_task_id: mae });
+	assert.throws(() => atualizarTarefa(db, sub, { project_id: 2 }, { tz: TZ }), Invalido);
+});
+
+test('apagarTarefa é físico e leva as subtarefas junto', () => {
+	const db = banco();
+	const mae = criarTarefa(db, { project_id: 1, title: 'mãe' });
+	const sub = criarTarefa(db, { project_id: 1, title: 'filha', parent_task_id: mae });
+	assert.ok(apagarTarefa(db, mae));
+	assert.equal(lerTarefa(db, mae), null);
+	assert.equal(lerTarefa(db, sub), null);
+	assert.equal(apagarTarefa(db, 999), false);
 });
