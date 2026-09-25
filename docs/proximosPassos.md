@@ -1,11 +1,11 @@
 # projMan — próximos passos
 
 > Documento de estado. Toda sessão nova começa por aqui.
-> Última atualização: 2026-09-24 (fim de sessão, encerrada pelo usuário para esperar os créditos). Último commit: `947b8a3` (onda 2); working tree limpo, `main` sincronizada.
+> Última atualização: 2026-09-25. Item 11 quase fechado: smoke da imagem feito, falta só o seed novo (Vikunja fora do ar) e a tag `v1.0.0`.
 
 ## Estado atual
 
-**Fase: build do v1.** Planejamento fechado (mapa [#1](https://github.com/edalcin/projMan/issues/1)). **Itens 1 a 10 prontos** (ondas 1 e 2, 2026-09-24). Falta só o **item 11** (fechamento do v1).
+**Fase: build do v1.** Planejamento fechado (mapa [#1](https://github.com/edalcin/projMan/issues/1)). **Itens 1 a 10 prontos** (ondas 1 e 2, 2026-09-24). **Item 11**: smoke feito em 2026-09-25; falta o passo 3 (seed) e a tag.
 
 **Produção**: https://projman.dalc.in (UNRAID), com o projeto "Entre Ciências" do Vikunja. A imagem nova só chega lá quando o usuário der *force update*. **Em 2026-09-24 o usuário foi avisado para dar *force update* (ondas 1 e 2); confirme com ele se já fez antes de testar em produção.**
 
@@ -56,22 +56,26 @@ Depois de cada onda: rode `npm test`, `npm run check`, `npm run build`; faça a 
 
 ## Plano da próxima sessão
 
-**Item 11 — fechamento do v1** (Main, sem subagentes). Gatilho: "continue conforme o proximosPassos.md".
+**Item 11 — o que resta** (Main, sem subagentes). Gatilho: "continue conforme o proximosPassos.md".
 
-1. Smoke da imagem no Docker local com todos os fluxos no browser (login real com senha, criar/editar tarefa, descrição, comentário, anexo, List/Kanban/Table, filtro salvo, link público, iCal, export, PWA offline).
-2. Cobrir o que ficou sem prova nas ondas 1 e 2:
-   - tela de 390 px das ondas 1 e 2 (painel, comentários, anexos, Kanban); a emulação no relay deu 260 px, use o Chrome headless abaixo;
-   - arrastar por toque (`delay: 250`) na List e no Kanban;
-   - `/filtros/<id>` → `/filtros/<outro id>` sem recarregar: o `ConstrutorFiltro` pode mostrar valores velhos (warning `state_referenced_locally`); se confirmar, `{#key data.id}` na página.
-3. Recriar `.dev-wipe-me.db` com o seed novo (agora traz o HTML da descrição) e conferir a descrição de uma tarefa real no painel.
-4. Rever `README.md`, `docs/instalacao.md` (seção de anexos/comentários, se faltar) e `deploy/unraid/my-projMan.xml` (sem copiar o XML para o servidor).
-5. Tag de release `v1.0.0` (`git tag v1.0.0 && git push --tags`) e avisar o usuário para dar *force update*.
+Feito em 2026-09-25 (smoke da imagem no Docker local, Chrome headless, dados de teste):
+- ✅ login real com senha e logout (botão **Sair** na sidebar, novo); tarefa, descrição (TipTap), label, comentário, anexo (download com `Content-Disposition`, sobrevive a restart); List/Kanban/Table; filtro salvo; link público (hash errado = 404); iCal (token errado = 404); export (`/tmp` vazio depois); PWA offline (SW ativo, página visitada abre offline; manifest com 192/512 + maskable). Container roda como uid 99.
+- ✅ 390 px: painel, comentários, anexos, Kanban sem overflow horizontal.
+- ✅ Arrastar por toque na List e no Kanban (dentro da coluna, entre colunas, Feito ↔ `marcarFeita`). Dois bugs achados e corrigidos:
+  - **Tocar na alça marcava a tarefa como feita**: o `Checkbox` do shadcn estende a área de clique (`after:-inset-x-3 after:-inset-y-2`) por cima da alça. Alça agora `relative z-10 -m-2 p-2`.
+  - **Arrastar não reordenava a tela** (servidor gravava; só o reload mostrava): o `onEnd` devolvia o nó com `children[i] ?? null`, que o jogava depois do comment anchor do `{#each}`. Agora guarda o `nextSibling` no `onStart`.
+- ✅ `/filtros/<id>` → `/filtros/<outro id>` sem reload: `{#key data.filtro.id}` na página; valores trocam certo.
+- ✅ `README.md`, `docs/instalacao.md` e o template revistos: sem mudança.
+
+Falta:
+1. Recriar `.dev-wipe-me.db` com o seed novo e conferir a descrição de uma tarefa real no painel. Em 2026-09-25 o Vikunja respondeu **502** (`https://vikunja.dalc.in/api/v1/info`); o banco antigo ficou intacto.
+2. Tag `v1.0.0` (`git tag v1.0.0 && git push --tags`) e avisar o usuário para dar *force update*.
 
 Depois do v1: perguntar ao usuário qual item de "Depois do v1" segue, ou se quer o seed com comentários e anexos do Vikunja.
 
-Fatos conhecidos, não são bugs: a whitelist remove `<b>`/`<i>` (o editor grava `<strong>`/`<em>`); `npm run check` tem 4 warnings `state_referenced_locally` (3 benignos, sincronizados por `$effect`; o 4º é o do item 2 acima).
+Fatos conhecidos, não são bugs: a whitelist remove `<b>`/`<i>` (o editor grava `<strong>`/`<em>`); `npm run check` tem 4 warnings `state_referenced_locally` (todos benignos: 3 sincronizados por `$effect`, o do `ConstrutorFiltro` coberto pelo `{#key}`).
 
-Browser de verificação: o relay (Chrome do usuário) falha com digitação no TipTap e fica "not visible". Use Chrome headless próprio: `browser.open({ app: { path: 'C:/Program Files/Google/Chrome/Application/chrome.exe', args: ['--headless=new', '--user-data-dir=<temp>'] } })`, cookie com `page.setCookie` dentro de `tab.run`, e `tab.emulate({ viewport })` para a largura.
+Browser de verificação: o relay (Chrome do usuário) falha com digitação no TipTap e fica "not visible". Use Chrome headless próprio: `browser.open({ app: { path: 'C:/Program Files/Google/Chrome/Application/chrome.exe', args: ['--headless=new', '--user-data-dir=<temp>'] } })`, login pelo formulário (`tab.type` + clique no submit), e `tab.emulate({ viewport })` para a largura. Toque: `page.touchscreen` (`touchStart`, espera 400 ms pelo `delay: 250`, `touchMove` em passos, `touchEnd`) com `hasTouch: true` e `deviceScaleFactor: 1`.
 
 ## Backlog de build (em ordem executável)
 
@@ -87,7 +91,7 @@ Cada item fecha completo antes do próximo. Entre parênteses, a origem.
 8. ✅ **Comentários e anexos.** Comentário com o mesmo TipTap e a mesma sanitização. Anexo até 25 MB em `FILES_PATH`, metadados em `attachments`, download com `Content-Disposition`. Varredura de órfãos no boot. (#9, #12, ADR 0005)
 9. ✅ **Link público.** Criar e revogar na UI do projeto (a rota `/share/<hash>` já existe). (#10)
 10. ✅ **PWA.** `src/service-worker.ts` nativo (cache-first nos assets, network-first no resto, mutação nunca cacheada), manifest com ícones 192/512 + maskable, reload no `controllerchange`. (#5, ADR 0004)
-11. **Fechamento do v1.** Smoke test da imagem no Docker local, com todos os fluxos. README e template revistos. Tag de release.
+11. **Fechamento do v1.** Smoke test da imagem no Docker local, com todos os fluxos. README e template revistos. Tag de release. — *smoke e revisão feitos em 2026-09-25; faltam seed e tag.*
 
 **Depois do v1** (fora): Web Push, Gantt (+ `blocked_by`), multiusuário, OR no filtro, favoritos de projeto, i18n.
 
@@ -114,7 +118,9 @@ python scripts/seed-vikunja.py "Entre Ciências" .dev-wipe-me.db --substituir
 
 ### Armadilhas de teste
 
-- **Smoke test da imagem**: `docker build` + `docker run` local, com volume (`-v projman-testdata:/data`), `TZ`, `ORIGIN`, `ADDRESS_HEADER`, `ADMIN_PASSWORD_HASH` e `SESSION_SECRET`. Remova o container e o volume no fim.
+- **Smoke test da imagem**: `docker build` + `docker run -p 8426:3000` (o app escuta em **3000** no container), com **dois** volumes (`-v projman-testdata:/data -v projman-testfiles:/files`; sem o `/files` o anexo some no restart), `TZ`, `ORIGIN=http://127.0.0.1:8426`, `ADMIN_PASSWORD_HASH` (`echo senha | node scripts/hash-senha.ts`), `SESSION_SECRET` e `ICAL_TOKEN`. **Sem `ADDRESS_HEADER`** local: sem proxy na frente o header não vem e o login dá 500. Remova o container e os volumes no fim.
+- **Git neste repositório**: o repo fica num share de rede (`//ASILO/...`) e o git recusa por "dubious ownership". Use `git -c safe.directory=* …` (não mexa no `--global`).
+- **SortableJS + Svelte**: quem move o DOM é o Svelte. Devolva o nó com o `nextSibling` gravado no `onStart`; nunca `children[i] ?? null` (sai do `{#each}`). Alça de arrastar fica acima (`z-10`) da área de clique estendida do `Checkbox` do shadcn.
 - **Dev server sem login**: `ADMIN_PASSWORD_HASH=scrypt:x` basta para o boot. Cookie à mão: `sessao=<expira ms>.<base64url(HMAC-SHA256(SESSION_SECRET, expira))>`.
 - **Form action do SvelteKit** sem `Accept: text/html` responde JSON 200, e não 303.
 - **`tsc --noEmit`** acusa `./$types` até rodar `svelte-kit sync` (o `npm run build` já roda).

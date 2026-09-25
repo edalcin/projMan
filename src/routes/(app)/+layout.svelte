@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import * as Collapsible from '$lib/components/ui/collapsible';
 	import * as Sidebar from '$lib/components/ui/sidebar';
+	import { Button } from '$lib/components/ui/button';
 	import { SMART_LISTS } from '$lib/listas';
 	import FecharDrawer from './FecharDrawer.svelte';
 	import Tema from './Tema.svelte';
@@ -93,7 +94,12 @@
 				</Collapsible.Root>
 			{/if}
 		</Sidebar.Content>
-		<Sidebar.Footer><Tema /></Sidebar.Footer>
+		<Sidebar.Footer>
+			<Tema />
+			<form method="POST" action="/logout" data-sveltekit-reload class="flex">
+				<Button type="submit" variant="ghost" size="sm" class="flex-1 justify-start"><i class="bx bx-log-out text-base"></i>Sair</Button>
+			</form>
+		</Sidebar.Footer>
 	</Sidebar.Root>
 
 	<Sidebar.Inset class="min-w-0">

@@ -34,6 +34,7 @@
 	}
 
 	function arrastar(el: HTMLElement) {
+		let proximo: Node | null = null;
 		const s = Sortable.create(el, {
 			handle: '.alca',
 			animation: 150,
@@ -41,11 +42,15 @@
 			delay: 250,
 			delayOnTouchOnly: true,
 			touchStartThreshold: 5,
+			// nextSibling, e não children[i]: o fim do {#each} é um comment do Svelte;
+			// devolver o nó depois dele o tira do bloco e a lista para de reordenar.
+			onStart(e) {
+				proximo = e.item.nextSibling;
+			},
 			onEnd(e) {
 				const { oldIndex, newIndex } = e;
 				// Devolve o nó ao lugar: quem move o DOM é o Svelte, não o Sortable.
-				const volta = oldIndex! > newIndex! ? 1 : 0;
-				e.from.insertBefore(e.item, e.from.children[oldIndex! + volta] ?? null);
+				e.from.insertBefore(e.item, proximo);
 				if (oldIndex === newIndex) return;
 				const lista = [...tarefas];
 				const [t] = lista.splice(oldIndex!, 1);
@@ -84,7 +89,8 @@
 		{#each tarefas as t (t.id)}
 			{@const prazo = t.due_date ? formatarPrazo(t.due_date, !!t.due_all_day, page.data.tz) : null}
 			<li class="flex items-center gap-2 border-b py-2 text-sm">
-				<i class="alca bx bx-move cursor-grab text-muted-foreground" title="Arrastar"></i>
+				<!-- relative z-10: o Checkbox do shadcn estende a área de clique (after:-inset-x-3) por cima da alça; sem isso, tocar na alça marca a tarefa como feita. p-2 -m-2: alvo de 30 px para o dedo. -->
+				<i class="alca bx bx-move relative z-10 -m-2 cursor-grab p-2 text-muted-foreground" title="Arrastar"></i>
 				<CheckFeita id={t.id} feita={!!t.done} />
 				<span class="h-5 w-1 shrink-0 rounded-full {COR[t.priority]}"></span>
 				<a href={linkTarefa(page.url, t.id)} class="min-w-0 flex-1 truncate hover:underline" class:line-through={!!t.done}>

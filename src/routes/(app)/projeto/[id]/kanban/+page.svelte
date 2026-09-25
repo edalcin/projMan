@@ -33,6 +33,7 @@
 	}
 
 	function coluna(el: HTMLElement) {
+		let proximo: Node | null = null;
 		const s = Sortable.create(el, {
 			group: 'kanban',
 			handle: '.alca',
@@ -41,11 +42,15 @@
 			delay: 250, // toque: pressão longa para arrastar, para não brigar com o scroll
 			delayOnTouchOnly: true,
 			touchStartThreshold: 5,
+			// nextSibling, e não children[i]: o fim do {#each} é um comment do Svelte;
+			// devolver o nó depois dele o tira do bloco e a coluna para de reordenar.
+			onStart(e) {
+				proximo = e.item.nextSibling;
+			},
 			onEnd(e) {
 				const { oldIndex, newIndex, from, to } = e;
 				// Devolve o nó ao lugar: quem move o DOM é o Svelte, não o Sortable.
-				const volta = from === to && oldIndex! > newIndex! ? 1 : 0;
-				from.insertBefore(e.item, from.children[oldIndex! + volta] ?? null);
+				from.insertBefore(e.item, proximo);
 				if (from === to && oldIndex === newIndex) return;
 				const deId = Number(from.dataset.bucket);
 				const paraId = Number(to.dataset.bucket);
@@ -85,7 +90,8 @@
 					{@const prazo = t.due_date ? formatarPrazo(t.due_date, !!t.due_all_day, page.data.tz) : null}
 					<li class="rounded-md border bg-background p-2 text-sm">
 						<div class="mb-1 flex items-start gap-1.5">
-							<i class="alca bx bx-move mt-0.5 shrink-0 cursor-grab text-muted-foreground" title="Arrastar"></i>
+							<!-- relative z-10 e p-2 -m-2: alvo de 30 px para o dedo, acima da área de clique estendida dos vizinhos. -->
+							<i class="alca bx bx-move relative z-10 -m-2 shrink-0 cursor-grab p-2 text-muted-foreground" title="Arrastar"></i>
 							<span class="mt-1 h-4 w-1 shrink-0 rounded-full {COR[t.priority]}"></span>
 							<a href={linkTarefa(page.url, t.id)} class="min-w-0 flex-1 hover:underline" class:line-through={!!t.done}>{t.title}</a>
 							<CheckFeita id={t.id} feita={!!t.done} />

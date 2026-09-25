@@ -21,7 +21,9 @@
 	{/if}
 
 	<form method="POST" action="?/salvar" use:enhance class="space-y-6">
-		<ConstrutorFiltro projetos={data.projetos} labels={data.labels} valor={data.filtro} />
+		{#key data.filtro.id}
+			<ConstrutorFiltro projetos={data.projetos} labels={data.labels} valor={data.filtro} />
+		{/key}
 		<div class="flex items-center gap-2">
 			<Button type="submit">Salvar</Button>
 			<Button href="/filtros" variant="outline">Cancelar</Button>
