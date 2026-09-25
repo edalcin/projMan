@@ -14,7 +14,7 @@ O que já existe e funciona (`npm test`: 78 testes; `npm run check`: 0 erros, 4 
 - `Dockerfile`, CI (build → Trivy → push para `ghcr.io/edalcin/projman`), template do UNRAID em `deploy/unraid/my-projMan.xml`. `README.md` é para o usuário; instalação e operação em `docs/instalacao.md`; desenvolvimento em `docs/desenvolvimento.md`.
 - Schema v1 (`migrations/001_inicial.sql`) e as migrações no boot, com snapshot `.bak` antes de migrar (`src/lib/server/migrar.ts`).
 - Regras de data e recorrência (`src/lib/datas.ts`); texto do prazo (`src/lib/prazo.ts`).
-- Autenticação: hook, `/login`, `/logout`, sessão HMAC, rate limit. `Referrer-Policy: same-origin`.
+- Autenticação: hook, `/login`, `/logout` (botão **Sair** no rodapé da sidebar, `src/routes/(app)/+layout.svelte`), sessão HMAC, rate limit. `Referrer-Policy: same-origin`.
 - Shell da UI, smart lists e `GET /api/tarefas?lista=|filtro=|projeto=` (`src/lib/server/filtro.ts`).
 - Projetos e labels (`/projetos`), com **link público** por projeto (criar, copiar, revogar).
 - **Tarefa**: `src/lib/server/tarefas.ts` (`criarTarefa`, `marcarFeita`, `lerTarefa`, `atualizarTarefa`, `apagarTarefa`); API `POST /api/tarefas`, `GET|PATCH|DELETE /api/tarefas/<id>`, `POST /api/tarefas/<id>/feita`, `GET /api/labels`. Painel `src/lib/components/tarefa/PainelTarefa.svelte` (abre com `?tarefa=<id>` em toda página do `(app)`), `CheckFeita.svelte`, `linkTarefa.ts`, `FabNovaTarefa.svelte`. Criação rápida no topo da lista e FAB no celular. Descrição rica com `EditorRico.svelte` (TipTap), sanitizada na escrita por `src/lib/server/html.ts` (`sanitizar`, `paraTexto` → `description_text`).
@@ -115,7 +115,7 @@ python scripts/seed-vikunja.py "Entre Ciências" .dev-wipe-me.db --substituir
 ### Armadilhas de teste
 
 - **Smoke test da imagem**: `docker build` + `docker run -p 8426:3000` (o app escuta em **3000** no container), com **dois** volumes (`-v projman-testdata:/data -v projman-testfiles:/files`; sem o `/files` o anexo some no restart), `TZ`, `ORIGIN=http://127.0.0.1:8426`, `ADMIN_PASSWORD_HASH` (`echo senha | node scripts/hash-senha.ts`), `SESSION_SECRET` e `ICAL_TOKEN`. **Sem `ADDRESS_HEADER`** local: sem proxy na frente o header não vem e o login dá 500. Remova o container e os volumes no fim.
-- **Git neste repositório**: o repo fica num share de rede (`//ASILO/...`) e o git recusa por "dubious ownership". Use `git -c safe.directory=* …` (não mexa no `--global`).
+- **Git neste repositório**: o repo fica num share de rede (`//ASILO/...`) e o git recusa por "dubious ownership". Use `git -c safe.directory=* …` (não mexa no `--global`). Em 2026-09-25 o drive `S:` caiu no meio da sessão e o Git Credential Manager falhou no push ("nome do diretório inválido"): rode o git com `cwd` local (`C:/Users/EDalcin`) e `-C //ASILO/Storage/git/projMan`.
 - **SortableJS + Svelte**: quem move o DOM é o Svelte. Devolva o nó com o `nextSibling` gravado no `onStart`; nunca `children[i] ?? null` (sai do `{#each}`). Alça de arrastar fica acima (`z-10`) da área de clique estendida do `Checkbox` do shadcn.
 - **Dev server sem login**: `ADMIN_PASSWORD_HASH=scrypt:x` basta para o boot. Cookie à mão: `sessao=<expira ms>.<base64url(HMAC-SHA256(SESSION_SECRET, expira))>`.
 - **Form action do SvelteKit** sem `Accept: text/html` responde JSON 200, e não 303.

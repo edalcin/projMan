@@ -9,7 +9,8 @@ projetos, quebra cada projeto em tarefas e acompanha tudo pelo navegador, no
 computador ou no celular. Não há contas nem equipes: o app é seu, roda no seu
 servidor e os dados ficam com você.
 
-> Em construção. O que já funciona e o que falta: [`docs/proximosPassos.md`](docs/proximosPassos.md).
+> **Versão 1.0.0** (2026-09-25). Estado do projeto e próximos passos:
+> [`docs/proximosPassos.md`](docs/proximosPassos.md).
 
 ## O que você faz com ele
 
@@ -30,7 +31,12 @@ servidor e os dados ficam com você.
   link que você pode revogar.
 - **Calendário.** Assine o feed iCal no Google Calendar (Outras agendas → Por
   URL) ou em outro cliente: toda tarefa aberta com prazo vira um evento.
-- **Tema claro e escuro**, e instalável como app (PWA).
+- **Arrastar no celular.** Na List e no Kanban, segure a alça de mover (as
+  quatro setas) por um instante e arraste.
+- **Tema claro e escuro**, e instalável como app (PWA): as páginas já abertas
+  continuam legíveis sem rede.
+- **Acesso com senha.** Uma senha só, a sua; **Sair** na barra lateral encerra a
+  sessão do aparelho.
 - **Seus dados.** Baixe tudo (banco e anexos) num arquivo `.tar.gz` a qualquer
   momento.
 
