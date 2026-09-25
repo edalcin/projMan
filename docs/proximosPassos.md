@@ -1,13 +1,13 @@
 # projMan — próximos passos
 
 > Documento de estado. Toda sessão nova começa por aqui.
-> Última atualização: 2026-09-25. Item 11 quase fechado: smoke da imagem feito, falta só o seed novo (Vikunja fora do ar) e a tag `v1.0.0`.
+> Última atualização: 2026-09-25. **v1 fechado** (tag `v1.0.0`).
 
 ## Estado atual
 
-**Fase: build do v1.** Planejamento fechado (mapa [#1](https://github.com/edalcin/projMan/issues/1)). **Itens 1 a 10 prontos** (ondas 1 e 2, 2026-09-24). **Item 11**: smoke feito em 2026-09-25; falta o passo 3 (seed) e a tag.
+**Fase: v1 entregue** (tag `v1.0.0`, 2026-09-25). Itens 1 a 11 prontos. Próximo passo: perguntar ao usuário o que segue (ver "Plano da próxima sessão").
 
-**Produção**: https://projman.dalc.in (UNRAID), com o projeto "Entre Ciências" do Vikunja. A imagem nova só chega lá quando o usuário der *force update*. **Em 2026-09-24 o usuário foi avisado para dar *force update* (ondas 1 e 2); confirme com ele se já fez antes de testar em produção.**
+**Produção**: https://projman.dalc.in (UNRAID), com o projeto "Entre Ciências" do Vikunja. A imagem nova só chega lá quando o usuário der *force update*. **Em 2026-09-25 o usuário foi avisado para dar *force update* (v1.0.0); confirme com ele se já fez antes de testar em produção.**
 
 O que já existe e funciona (`npm test`: 78 testes; `npm run check`: 0 erros, 4 warnings `state_referenced_locally`, ver "Plano da próxima sessão"):
 
@@ -25,7 +25,7 @@ O que já existe e funciona (`npm test`: 78 testes; `npm run check`: 0 erros, 4 
 - Página pública `/share/<hash>`, feed iCal `/ical/<token>`, export `/api/export`, saúde `/api/saude`.
 - `scripts/seed-vikunja.py` (dados reais do Vikunja; token no `.env` local).
 
-Ainda não existe: nada do backlog v1 além do item 11. O seed traz a descrição em HTML (via `scripts/sanitizar-html.ts`, mesma whitelist), mas não comentários nem anexos (Vikunja: `GET /tasks/{id}/comments`, `GET /tasks/{id}/attachments`).
+Ainda não existe: nada fora do v1. O seed traz a descrição em HTML (via `scripts/sanitizar-html.ts`, mesma whitelist), mas não comentários nem anexos (Vikunja: `GET /tasks/{id}/comments`, `GET /tasks/{id}/attachments`).
 
 ## Onde está a spec
 
@@ -56,9 +56,9 @@ Depois de cada onda: rode `npm test`, `npm run check`, `npm run build`; faça a 
 
 ## Plano da próxima sessão
 
-**Item 11 — o que resta** (Main, sem subagentes). Gatilho: "continue conforme o proximosPassos.md".
+**v1 fechado.** Primeira ação da próxima sessão: perguntar ao usuário qual item de "Depois do v1" segue, ou se quer o seed com comentários e anexos do Vikunja. Recomendação: o seed com comentários e anexos (é o que falta para trocar o Vikunja de vez).
 
-Feito em 2026-09-25 (smoke da imagem no Docker local, Chrome headless, dados de teste):
+Registro do item 11 (2026-09-25, smoke da imagem no Docker local, Chrome headless):
 - ✅ login real com senha e logout (botão **Sair** na sidebar, novo); tarefa, descrição (TipTap), label, comentário, anexo (download com `Content-Disposition`, sobrevive a restart); List/Kanban/Table; filtro salvo; link público (hash errado = 404); iCal (token errado = 404); export (`/tmp` vazio depois); PWA offline (SW ativo, página visitada abre offline; manifest com 192/512 + maskable). Container roda como uid 99.
 - ✅ 390 px: painel, comentários, anexos, Kanban sem overflow horizontal.
 - ✅ Arrastar por toque na List e no Kanban (dentro da coluna, entre colunas, Feito ↔ `marcarFeita`). Dois bugs achados e corrigidos:
@@ -66,12 +66,8 @@ Feito em 2026-09-25 (smoke da imagem no Docker local, Chrome headless, dados de 
   - **Arrastar não reordenava a tela** (servidor gravava; só o reload mostrava): o `onEnd` devolvia o nó com `children[i] ?? null`, que o jogava depois do comment anchor do `{#each}`. Agora guarda o `nextSibling` no `onStart`.
 - ✅ `/filtros/<id>` → `/filtros/<outro id>` sem reload: `{#key data.filtro.id}` na página; valores trocam certo.
 - ✅ `README.md`, `docs/instalacao.md` e o template revistos: sem mudança.
-
-Falta:
-1. Recriar `.dev-wipe-me.db` com o seed novo e conferir a descrição de uma tarefa real no painel. Em 2026-09-25 o Vikunja respondeu **502** (`https://vikunja.dalc.in/api/v1/info`); o banco antigo ficou intacto.
-2. Tag `v1.0.0` (`git tag v1.0.0 && git push --tags`) e avisar o usuário para dar *force update*.
-
-Depois do v1: perguntar ao usuário qual item de "Depois do v1" segue, ou se quer o seed com comentários e anexos do Vikunja.
+- ✅ `.dev-wipe-me.db` recriado com o seed novo (59 tarefas, 14 subtarefas, 5 labels); descrição HTML real (tarefa 48: parágrafos, lista, links) aparece certa no painel.
+- ✅ Tag `v1.0.0`.
 
 Fatos conhecidos, não são bugs: a whitelist remove `<b>`/`<i>` (o editor grava `<strong>`/`<em>`); `npm run check` tem 4 warnings `state_referenced_locally` (todos benignos: 3 sincronizados por `$effect`, o do `ConstrutorFiltro` coberto pelo `{#key}`).
 
@@ -91,7 +87,7 @@ Cada item fecha completo antes do próximo. Entre parênteses, a origem.
 8. ✅ **Comentários e anexos.** Comentário com o mesmo TipTap e a mesma sanitização. Anexo até 25 MB em `FILES_PATH`, metadados em `attachments`, download com `Content-Disposition`. Varredura de órfãos no boot. (#9, #12, ADR 0005)
 9. ✅ **Link público.** Criar e revogar na UI do projeto (a rota `/share/<hash>` já existe). (#10)
 10. ✅ **PWA.** `src/service-worker.ts` nativo (cache-first nos assets, network-first no resto, mutação nunca cacheada), manifest com ícones 192/512 + maskable, reload no `controllerchange`. (#5, ADR 0004)
-11. **Fechamento do v1.** Smoke test da imagem no Docker local, com todos os fluxos. README e template revistos. Tag de release. — *smoke e revisão feitos em 2026-09-25; faltam seed e tag.*
+11. ✅ **Fechamento do v1.** Smoke test da imagem no Docker local, com todos os fluxos. README e template revistos. Tag de release. — *feito em 2026-09-25.*
 
 **Depois do v1** (fora): Web Push, Gantt (+ `blocked_by`), multiusuário, OR no filtro, favoritos de projeto, i18n.
 
